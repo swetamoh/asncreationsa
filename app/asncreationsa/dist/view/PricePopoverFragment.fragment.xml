@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<Popover showHeader="false" placement="Top">
+		<Table inset="false" fixedLayout="false">
+			<columns>
+				<Column>
+					<Text text="HSN/SAC"/>
+				</Column>
+				<Column>
+					<Text text="IGST"/>
+				</Column>
+				<Column>
+					<Text text="CGST"/>
+				</Column>
+				<Column>
+					<Text text="SGST / UGST"/>
+				</Column>
+				<!--<Column>-->
+				<!--	<Text text="Tax Price"/>-->
+				<!--</Column>-->
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Text text="{/Hsn_Code}"/>
+						<Text text="{parts:[{path: '/Igst'},{path: '/Igst_per'}], formatter:'sap.fiori.asncreationsa.controller.formatter.getPercentSign'}"/>
+						<Text text="{parts:[{path: '/Cgst'},{path: '/Cgst_per'}], formatter:'sap.fiori.asncreationsa.controller.formatter.getPercentSign'}"/>
+						<Text text="{parts:[{path: '/Sgst'},{path: '/Sgst_per'}], formatter:'sap.fiori.asncreationsa.controller.formatter.getPercentSign'}"/>
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+	</Popover>
+</core:FragmentDefinition>

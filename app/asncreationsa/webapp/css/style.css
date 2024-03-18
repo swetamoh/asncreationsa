@@ -1,0 +1,3 @@
+.disablekb input {
+    pointer-events: none;
+}

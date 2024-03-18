@@ -1,0 +1,38 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<Popover showHeader="false" placement="Top">
+		<Table items="{itemModel>/results}" inset="false" fixedLayout="false">
+			<columns>
+				<Column minScreenWidth="Tablet" demandPopin="true">
+					<Text text="Sch.Line No"/>
+				</Column>
+				<Column minScreenWidth="Tablet" demandPopin="true">
+					<Text text="Delivery Date"/>
+				</Column>
+				<Column minScreenWidth="Tablet" demandPopin="true">
+					<Text text="Required Quantity"/>
+				</Column>
+				<Column minScreenWidth="Tablet" demandPopin="true">
+					<Text text="Status"/>
+				</Column>
+				<Column minScreenWidth="Tablet" demandPopin="true">
+					<Text text="Firm / Fix Indicator"/>
+				</Column>
+				<!--<Column minScreenWidth="Tablet" demandPopin="true">-->
+				<!--	<Text text="Delivered Quantity"/>-->
+				<!--</Column>-->
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Text text="{itemModel>Schedule_Line}"/>
+						<ObjectIdentifier title="{path:'itemModel>Delivery_Date', formatter:'sap.fiori.asncreationsa.controller.formatter.formatDate'}"/>
+						<ObjectNumber number="{itemModel>Required_Qty}" textAlign="End"/>
+						<ObjectNumber number="{itemModel>Status}" textAlign="Center"/>
+						<ObjectNumber number="{itemModel>FirmFix}" textAlign="Center"/>
+						<!--<ObjectNumber number="{itemModel>Delivered_Qty}" textAlign="Center"/>-->
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+	</Popover>
+</core:FragmentDefinition>

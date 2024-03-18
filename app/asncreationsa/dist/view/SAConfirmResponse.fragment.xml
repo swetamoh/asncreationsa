@@ -1,0 +1,12 @@
+<Dialog title="Error" xmlns:core="sap.ui.core" xmlns="sap.m" icon="sap-icon://message-error" state="Error">
+	<content>
+		<List items="{/errordetails}" growing="true">
+			<items>
+				<StandardListItem icon="sap-icon://error" title="{message}"/>
+			</items>
+		</List>
+	</content>
+	<beginButton>
+		<Button id="fragCloseId" text="Close" press="onFragClose"></Button>
+	</beginButton>
+</Dialog>

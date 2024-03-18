@@ -1,0 +1,183 @@
+{
+    "_version": "1.59.0",
+    "sap.app": {
+        "id": "sap.fiori.asncreationsa",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "0.0.1"
+        },
+        "title": "{{appTitle}}",
+        "description": "{{appDescription}}",
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "@sap/generator-fiori:basic",
+            "version": "1.12.5",
+            "toolsId": "3798a319-6181-499c-9fa6-258b7dc0ba3a"
+        },
+        "dataSources": {
+            "mainService": {
+                "uri": "asnsa/odata/v4/catalog/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "2.0"
+                }
+            }
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "asncreationsa-manage": {
+                    "semanticObject": "asncreationsa",
+                    "action": "manage",
+                    "title": "{{flpTitle}}",
+                    "icon": "sap-icon://documents",
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    }
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "flexEnabled": true,
+        "dependencies": {
+            "minUI5Version": "1.121.1",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.f": {},
+                "sap.suite.ui.generic.template": {},
+                "sap.ui.comp": {},
+                "sap.ui.generic.app": {},
+                "sap.ui.table": {},
+                "sap.ushell": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "settings": {
+                    "bundleName": "sap.fiori.asncreationsa.i18n.i18n"
+                }
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "synchronizationMode": "None",
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            }
+        },
+        "resources": {
+            "css": [
+                {
+                    "uri": "css/style.css"
+                }
+            ]
+        },
+        "routing": {
+            "config": {
+                "routerClass": "sap.m.routing.Router",
+                "viewType": "XML",
+                "async": true,
+                "viewPath": "sap.fiori.asncreationsa.view",
+                "controlAggregation": "pages"
+            },
+            "routes": [
+                {
+                    "pattern": "",
+                    "view": "SASplit",
+                    "name": "SASplit",
+                    "targetAggregation": "pages",
+                    "controlId": "app",
+                    "subroutes": [
+                        {
+                            "pattern": "",
+                            "name": "SAMaster",
+                            "view": "SAMaster",
+                            "targetControl": "splitApp",
+                            "targetAggregation": "masterPages",
+                            "subroutes": [
+                                {
+                                    "pattern": "NoData",
+                                    "name": "NoData",
+                                    "view": "NoData",
+                                    "targetAggregation": "detailPages"
+                                },
+                                {
+                                    "pattern": "Detail/{Schedule_No}",
+                                    "name": "SADetail",
+                                    "view": "SADetail",
+                                    "targetAggregation": "detailPages"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "pattern": "AsnCreate/{Schedule_No}",
+                    "name": "SAAsnCreate",
+                    "view": "SAAsnCreate",
+                    "targetAggregation": "pages",
+                    "controlId": "app"
+                },
+                {
+                    "pattern": "AsnEdit/{Schedule_No}/{Asn_No}/:Amount:",
+                    "name": "SAAsnEdit",
+                    "view": "SAAsnEdit",
+                    "targetAggregation": "pages",
+                    "controlId": "app"
+                },
+                {
+                    "pattern": "SAConfirm/{Schedule_No}",
+                    "name": "SAConfirm",
+                    "view": "SAConfirm",
+                    "targetAggregation": "pages",
+                    "controlId": "app"
+                },
+                {
+                    "pattern": "ItemDisplay/{Schedule_No}/{Material_No}/{Line_No}",
+                    "name": "ItemDisplay",
+                    "view": "ItemDisplay",
+                    "targetAggregation": "pages",
+                    "controlId": "app"
+                }
+            ]
+        },
+        "rootView": {
+            "viewName": "sap.fiori.asncreationsa.view.App",
+            "type": "XML",
+            "async": true,
+            "id": "App"
+        }
+    },
+    "sap.cloud": {
+        "public": true,
+        "service": "asncreationsa"
+    }
+}

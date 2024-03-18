@@ -1,0 +1,19 @@
+<Dialog title="Filters" titleAlignment="Center" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:calendar="sap.ui.unified"
+	afterClose="onFilterDialogClose">
+	<content>
+		<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12"
+			adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1"
+			singleContainerFullSize="false">
+			<Label design="Bold" text="Material"/>
+			<Input value="{filterModel>/Matnr}" valueHelpRequest="onMaterialValueHelp" showValueHelp="true"></Input>
+			<Label design="Bold" text="Plant"/>
+			<Input value="{filterModel>/Werks}" valueHelpRequest="onPlantValueHelp" showValueHelp="true"></Input>
+		</f:SimpleForm>
+	</content>
+	<beginButton>
+		<Button type="Emphasized" text="Filter" press="onFilterSubmit"/>
+	</beginButton>
+	<endButton>
+		<Button type="Reject" text="Cancel" press="onFilterCancel"/>
+	</endButton>
+</Dialog>
