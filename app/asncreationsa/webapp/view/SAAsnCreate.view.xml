@@ -45,6 +45,12 @@
                 />
             </attributes>
         </ObjectHeader>
+        <MessageStrip
+                id="_IDGenMessageStrip1"
+                type="Information"
+                class="sapUiTinyMargin"
+                text="DISCLAIMER : Creation of advance shiping note does not guarantee gate entry within imperial plant. Gate entry clearance will be subject to verification of valid PO &amp; Invoice."
+            />
         <f:SimpleForm
             id="AsnFormId"
             editable="true"
