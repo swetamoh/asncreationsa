@@ -14,6 +14,12 @@
 					<!-- text="{path:'detailHeaderModel>/Schedule_Date', formatter:'sap.fiori.asncreationsa.controller.formatter.formatDate'}"/> -->
 				</statuses>
 			</ObjectHeader>
+			<MessageStrip
+                id="_IDGenMessageStrip1"
+                type="Information"
+                class="sapUiTinyMargin"
+                text="DISCLAIMER : Creation of advance shiping note does not guarantee gate entry within imperial plant. Gate entry clearance will be subject to verification of valid PO &amp; Invoice."
+            />
 			<IconTabBar id="_IDGenIconTabBar1">
 				<items>
 					<IconTabFilter id="_IDGenIconTabFilter1" icon="sap-icon://approvals" text="Items">
