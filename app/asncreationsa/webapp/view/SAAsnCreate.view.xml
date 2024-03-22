@@ -46,11 +46,11 @@
             </attributes>
         </ObjectHeader>
         <MessageStrip
-                id="_IDGenMessageStrip1"
-                type="Information"
-                class="sapUiTinyMargin"
-                text="DISCLAIMER : Creation of Advance Shiping Note does not guarantee Gate Entry within plant. Gate Entry clearance will be subject to verification of valid PO &amp; Invoice."
-            />
+            id="_IDGenMessageStrip1"
+            type="Information"
+            class="sapUiTinyMargin"
+            text="DISCLAIMER : Creation of Advance Shiping Note does not guarantee Gate Entry within plant. Gate Entry clearance will be subject to verification of valid PO &amp; Invoice."
+        />
         <f:SimpleForm
             id="AsnFormId"
             editable="true"
@@ -96,13 +96,20 @@
                     width="185px"
                     enabled="false"
                 /> -->
-                <Label text="GRR/Docket No" visible="false"/>
+                <Label
+                    text="GRR/Docket No"
+                    visible="false"
+                />
                 <Input
                     type="Text"
                     value="{asnModel>/DocketNumber}"
-                    width="185px" visible="false"
+                    width="185px"
+                    visible="false"
                 />
-                <Label text="GRR/Docket Date" visible="false"/>
+                <Label
+                    text="GRR/Docket Date"
+                    visible="false"
+                />
                 <DatePicker
                     value="{asnModel>/GRDate}"
                     width="185px"
@@ -137,17 +144,25 @@
                     displayFormat="long"
                     enabled="true"
                 />
-                <Label text="Mill T.C. No" visible="false"/>
+                <Label
+                    text="Mill T.C. No"
+                    visible="false"
+                />
                 <Input
                     type="Text"
                     value="{asnModel>/MillNumber}"
-                    width="185px" visible="false"
+                    width="185px"
+                    visible="false"
                 />
-                <Label text="Mill Name" visible="false"/>
+                <Label
+                    text="Mill Name"
+                    visible="false"
+                />
                 <Input
                     type="Text"
                     value="{asnModel>/MillName}"
-                    width="185px" visible="false"
+                    width="185px"
+                    visible="false"
                 />
                 <Label
                     id="_IDGenLabel4"
@@ -158,7 +173,8 @@
                     id="_IDGenInput4"
                     type="Text"
                     value="{asnModel>/PDIRNumber}"
-                    width="185px" visible="false"
+                    width="185px"
+                    visible="false"
                 />
                 <Label
                     id="_IDGenLabel18"
@@ -169,7 +185,8 @@
                     id="_IDGenInput8"
                     type="Text"
                     value="{asnModel>/HeatNumber}"
-                    width="185px" visible="false"
+                    width="185px"
+                    visible="false"
                 />
                 <Label
                     id="_IDGenLabel19"
@@ -180,7 +197,8 @@
                     id="_IDGenInput9"
                     type="Text"
                     value="{asnModel>/BatchNumber}"
-                    width="185px" visible="false"
+                    width="185px"
+                    visible="false"
                 />
                 <Label text="Manf. Month" />
                 <DatePicker
@@ -285,6 +303,10 @@
                             </infoToolbar> -->
                             <columns>
                                 <Column
+                                    id="_IDGenColumn289"
+                                    width="6rem"
+                                />
+                                <Column
                                     id="_IDGenColumn1"
                                     minScreenWidth="Tablet"
                                     width="3rem"
@@ -295,7 +317,7 @@
                                         text="Bill Line No"
                                     />
                                 </Column>
-								<Column
+                                <Column
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
                                     width="6rem"
@@ -318,7 +340,7 @@
                                         text="Schedule Line"
                                     />
                                 </Column>
-								<Column
+                                <Column
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
                                     width="6rem"
@@ -375,6 +397,34 @@
                                     <Label
                                         design="Bold"
                                         text="Rate ({asnModel>/DocumentRows/results/0/Currency})"
+                                        wrapping="true"
+                                    />
+                                </Column>
+                                <Column
+                                    id="_IDGenColumn212"
+                                    minScreenWidth="Tablet"
+                                    demandPopin="true"
+                                    width="4rem"
+                                    hAlign="Center"
+                                >
+                                    <Label
+                                        id="_IDGenLabel312"
+                                        design="Bold"
+                                        text="Rate Agreed"
+                                        wrapping="true"
+                                    />
+                                </Column>
+                                <Column
+                                    id="_IDGenColumn222"
+                                    minScreenWidth="Tablet"
+                                    demandPopin="true"
+                                    width="10rem"
+                                    hAlign="Center"
+                                >
+                                    <Label
+                                        id="_IDGenLabel322"
+                                        design="Bold"
+                                        text="Rate as per Supplier"
                                         wrapping="true"
                                     />
                                 </Column>
@@ -600,7 +650,7 @@
                                         wrapping="true"
                                     />
                                 </Column>
-								<!--<Column
+                                <!--<Column
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
                                     width="6rem"
@@ -653,7 +703,7 @@
                                 <!--<Column minScreenWidth="Tablet" demandPopin="true">-->
                                 <!--	<Text text="Del. Date"/>-->
                                 <!--</Column>-->
-                              <!--  <Column
+                                <!--  <Column
                                     id="_IDGenColumn5"
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
@@ -810,19 +860,25 @@
                             <items>
                                 <ColumnListItem id="_IDGenColumnListItem1">
                                     <cells>
-									<Text
+                                        <ObjectStatus
+                                            id="_IDGenObjectStatus1"
+                                            text="{= ${asnModel>SupplierRate} > 0 ? 'Rate Mismatch' : 'Rate Matched'}"
+                                            icon="{= ${asnModel>SupplierRate} > 0 ? 'sap-icon://alert' : 'sap-icon://sys-enter-2'}"
+                                            state="{= ${asnModel>SupplierRate} > 0 ? 'Warning' : 'Success'}"
+                                        />
+                                        <Text
                                             id="_IDGenText11"
                                             text="{asnModel>LineNum}"
                                         />
-										<Text
+                                        <Text
                                             id="_IDGenText22"
                                             text="{asnModel>SchNum_ScheduleNum}"
                                         />
-										<Text
+                                        <Text
                                             id="_IDGenText23"
                                             text="{asnModel>SchLineNum}"
                                         />
-										<Text
+                                        <Text
                                             id="_IDGenText21"
                                             text="{asnModel>PoNum}"
                                         />
@@ -842,6 +898,17 @@
                                             id="_IDGenText14"
                                             text="{path:'asnModel>UnitPrice',formatter:'sap.fiori.asncreationsa.controller.formatter.formatAmount'}"
                                         />
+                                        <CheckBox
+                                            id="_IDGenCheckBox1"
+                                            selected="{asnModel>RateAggreed}"
+                                            select="onRateAgreedChange"
+                                        />
+                                        <Input
+                                            id="_IDGenInput111"
+                                            type="Number"
+                                            value="{asnModel>SupplierRate}"
+                                            enabled="{= ${asnModel>RateAggreed} === false}"
+                                        />
                                         <Input
                                             id="quantityId"
                                             value="{asnModel>BalanceQty}"
@@ -850,17 +917,14 @@
                                         <Text
                                             id="pkgamtId"
                                             text="{path:'asnModel>Packing',formatter:'sap.fiori.asncreationsa.controller.formatter.formatAmount'}"
-                                            
                                         />
                                         <Text
                                             id="freightId"
                                             text="{path:'asnModel>Frieght',formatter:'sap.fiori.asncreationsa.controller.formatter.formatAmount'}"
-                                            
                                         />
                                         <Text
                                             id="othchargeId"
                                             text="{path:'asnModel>OtherCharges',formatter:'sap.fiori.asncreationsa.controller.formatter.formatAmount'}"
-                                            
                                         />
                                         <Text
                                             id="assvalId"
@@ -1008,47 +1072,44 @@
                     id="_IDGenIconTabFilter2"
                     icon="sap-icon://attachment"
                 >
-                <upload:UploadSet
-					id="uploadSet"
-					instantUpload="false"
-					uploadEnabled="false"
-                    afterItemAdded="onAfterItemAdded"
-					uploadCompleted="onUploadCompleted"
-				>
-					
-					<upload:toolbar>
-					</upload:toolbar>
-					<upload:items>
-						<upload:UploadSetItem
-							fileName="{fileName}"
-							mediaType="{mediaType}"
-							url="{url}"
-							enabledEdit="false"
-							visibleEdit="false"
-							openPressed="onOpenPressed"
-						>
-                        
-							<upload:attributes>
-								<ObjectAttribute
-									title="Uploaded By"
-									text="{createdBy}"
-									active="false"
-								/>
-								<ObjectAttribute
-									title="Uploaded on"
-									text="{createdAt}"
-									active="false"
-								/>
-								<ObjectAttribute
-									title="File Size"
-									text="{size}"
-									active="false"
-								/>
-							</upload:attributes>
-						</upload:UploadSetItem>
-					</upload:items>
-				</upload:UploadSet>
-                 </IconTabFilter> 
+                    <upload:UploadSet
+                        id="uploadSet"
+                        instantUpload="false"
+                        uploadEnabled="false"
+                        afterItemAdded="onAfterItemAdded"
+                        uploadCompleted="onUploadCompleted"
+                    >
+                        <upload:toolbar />
+                        <upload:items>
+                            <upload:UploadSetItem
+                                fileName="{fileName}"
+                                mediaType="{mediaType}"
+                                url="{url}"
+                                enabledEdit="false"
+                                visibleEdit="false"
+                                openPressed="onOpenPressed"
+                            >
+                                <upload:attributes>
+                                    <ObjectAttribute
+                                        title="Uploaded By"
+                                        text="{createdBy}"
+                                        active="false"
+                                    />
+                                    <ObjectAttribute
+                                        title="Uploaded on"
+                                        text="{createdAt}"
+                                        active="false"
+                                    />
+                                    <ObjectAttribute
+                                        title="File Size"
+                                        text="{size}"
+                                        active="false"
+                                    />
+                                </upload:attributes>
+                            </upload:UploadSetItem>
+                        </upload:items>
+                    </upload:UploadSet>
+                </IconTabFilter>
             </items>
         </IconTabBar>
     </Page>

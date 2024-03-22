@@ -3,14 +3,15 @@ const axios = require('axios');
 
 module.exports = (srv) => {
 
-    const { SchedulingAgreements } = srv.entities;
+    const { SchedulingAgreements, ASNList } = srv.entities;
 
     srv.on('READ', SchedulingAgreements, async (req) => {
-       const { AddressCode, UnitCode } = req._queryOptions
-       // const AddressCode = 'GKE-01-01';
-       // const UnitCode = 'P01'
+        const { AddressCode, UnitCode } = req._queryOptions;
+        const schNum = req._queryOptions.SchNum || "";
+        // const AddressCode = 'GKE-01-01';
+        // const UnitCode = 'P01'
 
-        const results = await getSchedulingAgreements(AddressCode, UnitCode);
+        const results = await getSchedulingAgreements(AddressCode, UnitCode, schNum, ASNList);
         if (results.error) req.reject(500, results.error);
 
         const expandDocumentRows = req.query.SELECT.columns && req.query.SELECT.columns.some(({ expand, ref }) => expand && ref[0] === "DocumentRows");
@@ -48,13 +49,13 @@ module.exports = (srv) => {
             return response;
         } catch (error) {
             console.error('Error in PostASN API call:', error);
-            req.reject(400,`Error posting ASN: ${error.message}`);
+            req.reject(400, `Error posting ASN: ${error.message}`);
         }
     });
 
 };
 
-async function getSchedulingAgreements(AddressCode, UnitCode) {
+async function getSchedulingAgreements(AddressCode, UnitCode, schNum, ASNList) {
     try {
         const response = await axios({
             method: 'get',
@@ -84,9 +85,23 @@ async function getSchedulingAgreements(AddressCode, UnitCode) {
                 };
             });
 
+            let itemRecord = [], filter, supplierRate = true, rateAggreed = "";
+            if (schNum) {
+                itemRecord = await SELECT.from(ASNList).where({ SCHNUM_SCHEDULENUM: schNum }).orderBy('createdAt desc');
+            }
+
             // Extracting DocumentRows details
             const documentRows = dataArray.flatMap(data =>
                 data.DocumentRows.map(row => {
+
+                    if (schNum) {
+                        filter = itemRecord.filter(item => item.ItemCode === row.ItemCode);
+                        rateAggreed = filter[0]?.RateAggreed;
+                        rateAggreed = rateAggreed === undefined ? true : rateAggreed;
+                        supplierRate = filter[0]?.SupplierRate;
+                        supplierRate = supplierRate === undefined ? '' : supplierRate;
+                    }
+
                     return {
                         SchLineNum: row.LineNum,
                         PoNum: row.PoNum,
@@ -123,6 +138,8 @@ async function getSchedulingAgreements(AddressCode, UnitCode) {
                         TCA: row.TCA,
                         LineValue: row.LineValue,
                         WeightInKG: row.WeightInKG,
+                        RateAggreed: rateAggreed,
+                        SupplierRate: supplierRate,
                         SchNum_ScheduleNum: data.SchNum  // associating with the current Scheduling Agreement
                     };
                 })

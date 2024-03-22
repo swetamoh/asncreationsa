@@ -1,39 +1,45 @@
 {
-    "name": "asncreationsa",
-    "version": "1.0.0",
-    "description": "A simple CAP project.",
-    "repository": "<Add your repository here>",
-    "license": "UNLICENSED",
-    "private": true,
-    "dependencies": {
-        "@sap/cds": "^7",
-        "@sap/cds-hana": "^2",
-        "@sap/cds-odata-v2-adapter-proxy": "^1.9.21",
-        "@sap/xssec": "^3",
-        "axios": "^1.6.2",
-        "express": "^4",
-        "hdb": "^0.19.6",
-        "passport": "^0"
+  "name": "asncreationsa",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^7",
+    "@sap/cds-hana": "^2",
+    "@sap/cds-odata-v2-adapter-proxy": "^1.9.21",
+    "@sap/hana-client": "^2.20.15",
+    "@sap/xssec": "^3",
+    "axios": "^1.6.2",
+    "express": "^4",
+    "hdb": "^0.19.6",
+    "passport": "^0"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^7",
+    "@sap/hdi-deploy": "4.9.2",
+    "@sap/ux-specification": "^1.120.5",
+    "rimraf": "^3.0.2"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch-asncreationsa": "cds watch --open asncreationsa/webapp/index.html?sap-ui-xx-viewCache=false",
+    "undeploy": "cf undeploy asncreationsa --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+  },
+  "cds": {
+    "requires": {
+      "[production]": {
+        "db": "hana",
+        "auth": "xsuaa"
+      },
+      "db": "hana"
     },
-    "devDependencies": {
-        "@cap-js/sqlite": "^1",
-        "@sap/cds-dk": "^7",
-        "@sap/ux-specification": "^1.120.5",
-        "rimraf": "^3.0.2"
-    },
-    "scripts": {
-        "start": "cds-serve",
-        "watch-asncreationsa": "cds watch --open asncreationsa/webapp/index.html?sap-ui-xx-viewCache=false",
-        "undeploy": "cf undeploy asncreationsa --delete-services --delete-service-keys --delete-service-brokers",
-        "build": "rimraf resources mta_archives && mbt build --mtar archive",
-        "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
-    },
-    "cds": {
-        "requires": {
-            "[production]": {
-                "db": "hana",
-                "auth": "xsuaa"
-            }
-        }
+    "hana": {
+      "deploy-format": "hdbtable"
     }
+  }
 }

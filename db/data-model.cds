@@ -1,11 +1,8 @@
 namespace my.bookshop;
 
-using {
-  cuid,
-  managed
-} from '@sap/cds/common';
+using {managed} from '@sap/cds/common';
 
-entity SchedulingAgreements {
+entity SchedulingAgreements : managed {
   key ScheduleNum   : String;
       SchLineNum    : String;
       PoNum         : String;
@@ -24,7 +21,7 @@ entity SchedulingAgreements {
                         on asnListHeader.SchNum = $self;
 }
 
-entity DocumentRowItems {
+entity DocumentRowItems : managed {
   key UUID          : UUID;
       SchLineNum    : String;
       PoNum         : String;
@@ -61,10 +58,12 @@ entity DocumentRowItems {
       TCA           : String;
       LineValue     : String;
       WeightInKG    : String;
+      RateAggreed   : Boolean default true;
+      SupplierRate  : Integer;
       SchNum        : Association to SchedulingAgreements;
 }
 
-entity ASNList {
+entity ASNList : managed {
   key UUID           : UUID;
       SchNum         : Association to SchedulingAgreements;
       ItemCode       : String;
@@ -106,9 +105,11 @@ entity ASNList {
       VendorCode     : String;
       VendorName     : String;
       TOTAL          : String;
+      RateAggreed    : Boolean default true;
+      SupplierRate   : Integer;
 }
 
-entity ASNListHeader {
+entity ASNListHeader : managed {
   key AsnNum             : String;
       SchNum             : Association to SchedulingAgreements;
       BillNumber         : String;
@@ -143,4 +144,3 @@ entity Files : managed {
       size      : Integer;
       url       : String;
 }
-
