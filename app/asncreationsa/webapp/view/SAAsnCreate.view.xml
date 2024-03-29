@@ -49,7 +49,7 @@
             id="_IDGenMessageStrip1"
             type="Information"
             class="sapUiTinyMargin"
-            text="DISCLAIMER : Creation of Advance Shiping Note does not guarantee Gate Entry within plant. Gate Entry clearance will be subject to verification of valid PO &amp; Invoice."
+            text="DISCLAIMER : Creation of Advance Shiping Note does not guarantee Gate Entry within plant. Gate Entry clearance will be subject to verification of valid PO, Schedule &amp; Invoice. Please enter manufacturing date under Remarks column for perishable materials."
         />
         <f:SimpleForm
             id="AsnFormId"
@@ -200,13 +200,17 @@
                     width="185px"
                     visible="false"
                 />
-                <Label text="Manf. Month" />
+                <Label
+                    text="Manf. Month"
+                    visible="false"
+                />
                 <DatePicker
                     value="{asnModel>/ManufacturingMonth}"
                     width="185px"
                     valueFormat="yyyyMMdd"
                     displayFormat="long"
                     enabled="true"
+                    visible="false"
                 />
             </f:content>
         </f:SimpleForm>
@@ -302,10 +306,10 @@
                                 </OverflowToolbar>
                             </infoToolbar> -->
                             <columns>
-                                <Column
+                                <!-- <Column
                                     id="_IDGenColumn289"
                                     width="6rem"
-                                />
+                                /> -->
                                 <Column
                                     id="_IDGenColumn1"
                                     minScreenWidth="Tablet"
@@ -400,7 +404,7 @@
                                         wrapping="true"
                                     />
                                 </Column>
-                                <Column
+                                <!-- <Column
                                     id="_IDGenColumn212"
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
@@ -413,8 +417,8 @@
                                         text="Rate Agreed"
                                         wrapping="true"
                                     />
-                                </Column>
-                                <Column
+                                </Column> -->
+                                <!-- <Column
                                     id="_IDGenColumn222"
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
@@ -427,7 +431,7 @@
                                         text="Rate as per Supplier"
                                         wrapping="true"
                                     />
-                                </Column>
+                                </Column> -->
                                 <Column
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
@@ -650,6 +654,20 @@
                                         wrapping="true"
                                     />
                                 </Column>
+                                <Column
+                                    id="_IDGenColumn222"
+                                    minScreenWidth="Tablet"
+                                    demandPopin="true"
+                                    width="10rem"
+                                    hAlign="Center"
+                                >
+                                    <Label
+                                        id="_IDGenLabel322"
+                                        design="Bold"
+                                        text="Remarks"
+                                        wrapping="true"
+                                    />
+                                </Column>
                                 <!--<Column
                                     minScreenWidth="Tablet"
                                     demandPopin="true"
@@ -860,12 +878,12 @@
                             <items>
                                 <ColumnListItem id="_IDGenColumnListItem1">
                                     <cells>
-                                        <ObjectStatus
+                                        <!-- <ObjectStatus
                                             id="_IDGenObjectStatus1"
                                             text="{= ${asnModel>SupplierRate} > 0 ? 'Rate Mismatch' : 'Rate Matched'}"
                                             icon="{= ${asnModel>SupplierRate} > 0 ? 'sap-icon://alert' : 'sap-icon://sys-enter-2'}"
                                             state="{= ${asnModel>SupplierRate} > 0 ? 'Warning' : 'Success'}"
-                                        />
+                                        /> -->
                                         <Text
                                             id="_IDGenText11"
                                             text="{asnModel>LineNum}"
@@ -898,17 +916,17 @@
                                             id="_IDGenText14"
                                             text="{path:'asnModel>UnitPrice',formatter:'sap.fiori.asncreationsa.controller.formatter.formatAmount'}"
                                         />
-                                        <CheckBox
+                                        <!-- <CheckBox
                                             id="_IDGenCheckBox1"
                                             selected="{asnModel>RateAggreed}"
                                             select="onRateAgreedChange"
-                                        />
-                                        <Input
+                                        /> -->
+                                        <!-- <Input
                                             id="_IDGenInput111"
                                             type="Number"
                                             value="{asnModel>SupplierRate}"
                                             enabled="{= ${asnModel>RateAggreed} === false}"
-                                        />
+                                        /> -->
                                         <Input
                                             id="quantityId"
                                             value="{asnModel>BalanceQty}"
@@ -990,14 +1008,12 @@
                                         <Text
                                             id="_IDGenText12"
                                             text="{path:'asnModel>ShipDate', formatter:'sap.fiori.asncreationsa.controller.formatter.formatDate'}"
-                                        />
+                                        />-->
                                         <DatePicker
                                             id="_IDGenDatePicker1"
                                             value="{asnModel>MatExpDate}"
                                             valueFormat="yyyyMMdd"
-                                            minDate="{dateModel>/minDate}"
-                                            enabled="{asnModel>MatExp}"
-                                        /> -->
+                                        />
                                         <!--<Text text="{path:'asnModel>Eindt', formatter:'sap.fiori.asncreationsa.controller.formatter.formatDate'}"/>-->
                                         <!--<Text text="{asnModel>Eindt}"/>-->
                                         <!-- <Link
