@@ -107,6 +107,7 @@ entity ASNList : managed {
       TOTAL          : String;
       RateAggreed    : Boolean default true;
       SupplierRate   : Integer;
+      MatExpDate     : String;
 }
 
 entity ASNListHeader : managed {
