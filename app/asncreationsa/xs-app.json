@@ -8,6 +8,13 @@
       "service": "sap-approuter-userapi"
     },
     {
+      "source": "^/sa/(.*)$",
+      "target": "/sa/$1",
+      "destination": "SchedulingAgreement_SRV",
+      "authenticationType": "xsuaa",
+      "csrfProtection": false
+    },
+    {
       "source": "^/asnsa/(.*)$",
       "target": "/asnsa/$1",
       "destination": "asncreationsa-srv-api",

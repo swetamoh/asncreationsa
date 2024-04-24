@@ -23,6 +23,15 @@
                     "annotations": [],
                     "odataVersion": "2.0"
                 }
+            },
+            "catalog": {
+                "uri": "sa/odata/v4/catalog/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "localUri": "localService/catalog/metadata.xml",
+                    "odataVersion": "2.0"
+                }
             }
         },
         "crossNavigation": {
@@ -91,6 +100,18 @@
                     "autoExpandSelect": true,
                     "earlyRequests": true
                 }
+            },
+            "catalog": {
+                "dataSource": "catalog",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false,
+                    "metadataUrlParams": {
+                        "sap-value-list": "none"
+                    }
+                }
             }
         },
         "resources": {
@@ -130,7 +151,7 @@
                                     "targetAggregation": "detailPages"
                                 },
                                 {
-                                    "pattern": "Detail/{Schedule_No}",
+                                    "pattern": "Detail/{AsnNumber}/{AddressCode}/{UnitCode}/{ASNStatus}",
                                     "name": "SADetail",
                                     "view": "SADetail",
                                     "targetAggregation": "detailPages"
@@ -138,34 +159,6 @@
                             ]
                         }
                     ]
-                },
-                {
-                    "pattern": "AsnCreate/{Schedule_No}",
-                    "name": "SAAsnCreate",
-                    "view": "SAAsnCreate",
-                    "targetAggregation": "pages",
-                    "controlId": "app"
-                },
-                {
-                    "pattern": "AsnEdit/{Schedule_No}/{Asn_No}/:Amount:",
-                    "name": "SAAsnEdit",
-                    "view": "SAAsnEdit",
-                    "targetAggregation": "pages",
-                    "controlId": "app"
-                },
-                {
-                    "pattern": "SAConfirm/{Schedule_No}",
-                    "name": "SAConfirm",
-                    "view": "SAConfirm",
-                    "targetAggregation": "pages",
-                    "controlId": "app"
-                },
-                {
-                    "pattern": "ItemDisplay/{Schedule_No}/{Material_No}/{Line_No}",
-                    "name": "ItemDisplay",
-                    "view": "ItemDisplay",
-                    "targetAggregation": "pages",
-                    "controlId": "app"
                 }
             ]
         },
