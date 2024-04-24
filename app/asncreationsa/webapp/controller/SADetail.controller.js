@@ -201,14 +201,14 @@ sap.ui.define([
 				success: function (data, textStatus, jqXHR) {
 					that.dialogSource.getParent().destroy();
 					sap.ui.core.BusyIndicator.hide();
-					that.AsnNum = data.d.PostASNCancellation;
-					MessageBox.success(that.AsnNum + " ASN cancelled succesfully", {
+					//that.AsnNum = data.d.PostASNCancellation;
+					MessageBox.success(" ASN cancelled succesfully", {
 						actions: [sap.m.MessageBox.Action.OK],
 						icon: sap.m.MessageBox.Icon.SUCCESS,
 						title: "Success",
 						onClose: function (oAction) {
 							if (oAction === "OK") {
-								that.getData();
+								this.router.navTo('SAMaster');
 							}
 						}
 					});

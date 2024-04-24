@@ -98,6 +98,7 @@ sap.ui.define([
 		},
 
 		onSearch: function (evt) {
+			var that = this;
 			if (evt.getParameter("refreshButtonPressed") === true) {
 				this.getView().byId("masterListId").getBinding("items").refresh(true);
 			} else {
@@ -119,10 +120,10 @@ sap.ui.define([
 					},
 					success: function (oData) {
 						sap.ui.core.BusyIndicator.hide();
-						this.PlantCode = oData.results[0].PlantCode;
+						that.PlantCode = oData.results[0].PlantCode;
 						that.DataModel.setData(oData);
 						that.DataModel.refresh();
-						this.routeToDetail();
+						that.routeToDetail();
 					},
 					error: function (oError) {
 						sap.ui.core.BusyIndicator.hide();

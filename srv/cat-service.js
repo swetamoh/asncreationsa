@@ -7,7 +7,7 @@ module.exports = (srv) => {
 
     srv.on('READ', GetASNHeaderList, async (req) => {
         const params = req._queryOptions;
-        const results = await getASNHeaderList(params);
+        let results = await getASNHeaderList(params);
         if (results.error) req.reject(500, results.error);
          // Checking for search parameter
          const searchVal = req._queryOptions && req._queryOptions.$search;
