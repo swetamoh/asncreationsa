@@ -22,285 +22,232 @@ sap.ui.define([
 			this.router = sap.ui.core.UIComponent.getRouterFor(this);
 			this.router.attachRouteMatched(this.handleRouteMatched, this);
 
-			this.detailHeaderModel = new sap.ui.model.json.JSONModel();
-			this.detailHeaderModel.setSizeLimit(1000);
-			this.getView().setModel(this.detailHeaderModel, "detailHeaderModel");
 			this.detailModel = new sap.ui.model.json.JSONModel();
-			this.detailModel.setSizeLimit(1000);
+			this.detailModel.setSizeLimit(10000000);
 			this.getView().setModel(this.detailModel, "detailModel");
-			this.materialDescModel = new sap.ui.model.json.JSONModel();
-			this.materialDescModel.setSizeLimit(1000);
-			this.getView().setModel(this.materialDescModel, "materialDescModel");
 
-			this.ConfirmFragModel = new sap.ui.model.json.JSONModel();
+			this.getView().setModel(new JSONModel({}), "DecisionModel");
 
 			this.getView().addStyleClass("sapUiSizeCompact");
-
-			this.getView().byId("ObjectId").onAfterRendering = function () {
-				sap.m.ObjectHeader.prototype.onAfterRendering.apply(this, arguments);
-				this.$().find('.sapMOHTitleDiv').find('.sapMText').css('color', "#af2323");
-			};
+			this.byId("uploadSet").attachEvent("openPressed", this.onOpenPressed, this);
+			// this.getView().byId("ObjectId").onAfterRendering = function () {
+			// 	sap.m.ObjectHeader.prototype.onAfterRendering.apply(this, arguments);
+			// 	this.$().find('.sapMOHTitleDiv').find('.sapMText').css('color', "#af2323");
+			// };
 
 		},
 
-		handleRouteMatched: function (event) {
+		handleRouteMatched: function (oEvent) {
 
-			if (event.getParameter("name") === "SADetail") {
+			if (oEvent.getParameter("name") === "SADetail") {
 
+				sap.ui.core.BusyIndicator.show();
 				this.odata = {};
 				var that = this;
 				var oModel = this.getOwnerComponent().getModel();
-				// this.oDataModel.setHeaders({
-				// 	"loginId": that.loginData.loginName,
-				// 	"LoginType": that.loginData.userType
-				// });
-				var unitCode = sessionStorage.getItem("unitCode") || 'P01';
-				this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA") || 'JSE-01-01';
-				var Schedule_No = event.getParameter("arguments").Schedule_No;
-				this.Schedule_No = Schedule_No.replace(/-/g, '/');
-				// this.Vendor_No = event.getParameter("arguments").Vendor_No;
+				this.LoggedUser = sessionStorage.getItem("LoggedUser") || "rajeshsehgal@impauto.com";
+				var data = oEvent.getParameter("arguments");
+				this.AsnNumber = data.AsnNumber.replace(/-/g, '/');
+				this.AsnNum = data.AsnNumber;
+				this.UnitCode = data.UnitCode;
+				this.AddressCode = data.AddressCode;
+				this.ASNStatus = data.ASNStatus;
 
-				// var request = "/PO_HEADERSet(Po_No='" + this.Po_Num + "',Vendor_No='" + this.Vendor_No + "')?$expand=headertoitemNav";
+				var oUploadSet = this.byId("uploadSet");
+				oUploadSet.removeAllItems();
+				that.detailModel.setData([]);
+				that.detailModel.refresh();
 
-				var request = "/SchedulingAgreements";
-				oModel.read(request, {
+				oModel.read("/GetASNDetailList", {
 					urlParameters: {
-						"$expand": "DocumentRows",
-                        AddressCode: this.AddressCodeASNSA,
-                        UnitCode: unitCode
-                    },
+						username: this.LoggedUser,
+						AddressCode: this.AddressCode,
+						ASNNumber: this.AsnNumber,
+						UnitCode: this.UnitCode
+					},
 					success: function (oData) {
-						var filteredPurchaseOrder = oData.results.find(po => po.ScheduleNum === that.Schedule_No);
-						if (filteredPurchaseOrder) {
-							that.detailHeaderModel.setData(filteredPurchaseOrder);
-							that.detailHeaderModel.refresh(true);
-						
-							that.detailModel.setData(filteredPurchaseOrder.DocumentRows.results);
-							that.detailModel.refresh(true);
-							var detailModelData = that.getView().getModel("detailModel").getData();
-							for(var i = 0; i < detailModelData.length; i++){
-								if(detailModelData[i].DeliveredQty === "0"){
-									detailModelData[i].ConfirmStatus = "Open";
-								}else if(detailModelData[i].DeliveredQty === detailModelData[i].PoQty){
-									detailModelData[i].ConfirmStatus = "Closed";
-								}else if((detailModelData[i].DeliveredQty > "0") && (detailModelData[i].DeliveredQty < detailModelData[i].PoQty)){
-									detailModelData[i].ConfirmStatus = "Partially";
-								}
-							}
-							that.detailModel.refresh(true);
-						} else {
-							//MessageBox.error("Schedule Number  not found");
-						}
+						sap.ui.core.BusyIndicator.hide();
+						that.detailModel.setData(oData);
+						that.detailModel.getData().ASNStatus = that.ASNStatus;
+						that.detailModel.refresh();
+						that._fetchFilesForPoNum(that.AsnNum);
 					},
 					error: function (oError) {
+						sap.ui.core.BusyIndicator.hide();
 						var value = JSON.parse(oError.response.body);
 						MessageBox.error(value.error.message.value);
 					}
 				});
-				// var data = this.detailModel.getData().Sitemnav;
-				// this.checkCount = 0;
-				// this.enabledCount = 0;
-				// this.getView().byId("chkBoxSelectAll").setSelected(false);
-				// this.getView().byId("chkBoxSelectAll").setEnabled(true);
-
-				// for (var i = 0; i < data.length; i++) {
-				// 	if (data[i].Confirm_Status == "Not Confirmed") {
-				// 		this.enabledCount++;
-				// 	}
-				// }
-				// if (this.enabledCount == 0) {
-				// 	this.getView().byId("chkBoxSelectAll").setEnabled(false);
-				// }
-
-				// this.getView().bindElement({
-				// 	path: request,
-				// 	events: {
-				// 		dataReceived: function(oError) {}
-				// 	}
-				// });
-
 			}
 		},
-		onCreateAsn: function () {
-			var that = this;
-			var Schedule_No = that.Schedule_No.replace(/\//g, '-');
-			that.router.navTo("SAAsnCreate", {
-				"Schedule_No": Schedule_No
-			});
-			// ,App='SA'
-			// this.oDataModel.read("/ASN_HEADERSet(Schedule_No='" + this.Schedule_No + "')?$expand=ASNItemnav",
-			// 	null, null, false,
-			// 	function (oData, oResponse) {
-			// 		that.router.navTo("SAAsnCreate", {
-			// 			"Schedule_No": that.Schedule_No
-			// 		});
-			// 	},
-			// 	function (oError) {
-			// 		var value = JSON.parse(oError.response.body);
-			// 		MessageBox.error(value.error.message.value);
-			// 	});
+		_fetchFilesForPoNum: function (AsnNum) {
+			var oModel = this.getView().getModel("catalog");
+			var oUploadSet = this.byId("uploadSet");
+			oUploadSet.removeAllItems();
 
-		},
-		onItempress: function (oEvent) {
-			var Data = oEvent.getParameter("listItem").getBindingContext("detailModel").getObject();
-			var ScheduleNo = Data.SchNum_ScheduleNum;
-			var Schedule_No = ScheduleNo.replace(/\//g, '-');
-			this.router.navTo("ItemDisplay", {
-				"Schedule_No": Schedule_No,
-				"Material_No": Data.ItemCode,
-				"Line_No": Data.LineNum
+			oModel.read("/Files", {
+				filters: [new sap.ui.model.Filter("AsnNum", sap.ui.model.FilterOperator.EQ, AsnNum)],
+				success: function (oData) {
+					oData.results.forEach(function (fileData) {
+						var oItem = new sap.m.upload.UploadSetItem({
+							fileName: fileData.fileName,
+							mediaType: fileData.mediaType,
+							url: fileData.url,
+							attributes: [
+								new sap.m.ObjectAttribute({ title: "Uploaded By", text: fileData.createdBy }),
+								new sap.m.ObjectAttribute({ title: "Uploaded on", text: fileData.createdAt }),
+								new sap.m.ObjectAttribute({ title: "File Size", text: fileData.size.toString() })
+							]
+						});
+
+						oUploadSet.addItem(oItem);
+					});
+				},
+				error: function (oError) {
+					console.log("Error: " + oError)
+				}
 			});
 		},
-		onChkBoxSelect: function (oEvent) {
-
-			if (!oEvent.getParameter("selected")) {
-				this.checkCount--;
-			} else {
-				this.checkCount++;
-			}
-
-			this.getView().byId("chkBoxSelectAll").setSelected(false);
-
-			if (this.checkCount == this.enabledCount) {
-				this.getView().byId("chkBoxSelectAll").setSelected(true);
-			}
-
+		onOpenPressed: function (oEvent) {
+			oEvent.preventDefault();
+			//var item = oEvent.getSource();
+			var item = oEvent.getParameter("item");
+			this._fileName = item.getFileName();
+			this._download(item)
+				.then((blob) => {
+					var url = window.URL.createObjectURL(blob);
+					var link = document.createElement('a');
+					link.href = url;
+					link.setAttribute('download', this._fileName);
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+				})
+				.catch((err) => {
+					console.log(err);
+				});
 		},
-		selectAllCheck: function (oEvent) {
-			var that = this;
-			that.detailModel.refresh(true);
-			var isAllSelected = oEvent.getParameter("selected");
-			var data = that.detailModel.getData();
-			var tableData = data.Sitemnav;
-			this.checkCount = 0;
-			for (var i = 0; i < tableData.length; i++) {
-
-				if (isAllSelected) {
-
-					this.isSelected = tableData[i].Confirm_Status;
-
-					if (this.isSelected == "Not Confirmed") {
-						tableData[i].Item_indicator = true;
-						this.checkCount++;
-					}
-				} else {
-					tableData[i].Item_indicator = false;
+		_download: function (item) {
+			console.log("_download")
+			var settings = {
+				url: item.getUrl(),
+				method: "GET",
+				xhrFields: {
+					responseType: "blob"
 				}
 			}
 
-			data.Sitemnav.results = tableData;
-			this.detailModel.setData(data);
-			this.detailModel.refresh(true);
-
-		},
-
-		onCofirmAsn: function (oEvent) {
-			var data = this.detailModel.getData();
-			this.router.navTo("SAConfirm", {
-				Schedule_No: data.Schedule_No
+			return new Promise((resolve, reject) => {
+				$.ajax(settings)
+					.done((result, textStatus, request) => {
+						resolve(result);
+					})
+					.fail((err) => {
+						reject(err);
+					})
 			});
-			// 	var that = this;
-			// 	this.detailModel.refresh(true);
-			// 	this.data = this.detailModel.getData();
-			// 	this.tableData = this.data.Sitemnav;
-			// 	var createData = {
-			// "Amount": this.data.Amount,
-			// "Buyer_Name": this.data.Buyer_Name,
-			// "Currency": this.data.Currency,
-			// "Item_Count": this.data.Item_Count,
-			// "Order_Type": this.data.Order_Type,
-			// "Order_Type_Desc": this.data.Order_Type_Desc,
-			// "Schedule_Date": this.data.Schedule_Date,
-			// "Schedule_No": this.data.Schedule_No,
-			// "Purchase_Group": this.data.Purchase_Group,
-			// "Purchase_Group_Desc": this.data.Purchase_Group_Desc,
-			// "Purchase_Org": this.data.Purchase_Org,
-			// "Purchase_Org_Desc": this.data.Purchase_Org_Desc,
-			// "Status": this.data.Status,
-			// "Upcoming_Del_Date": this.data.Upcoming_Del_Date,
-			// "Vendor_Name": this.data.Vendor_Name,
-			// 		"Sitemnav": []
-			// 	};
-			// 	for (var i = 0; i < that.tableData.length; i++) {
-			// 		if (that.tableData[i].Item_indicator == "true" || that.tableData[i].Item_indicator == true) {
-			// 			delete that.tableData[i].__metadata;
-			// 			that.tableData[i].Item_indicator = "true";
-			// 			createData.Sitemnav.push(that.tableData[i]);
-			// 		}
-			// 	}
-			// 	if (createData.Sitemnav.length <= 0) {
-			// 		MessageBox.error("No Line Item Selected");
-			// 	} else {
-			// 		MessageBox.confirm("Do You Want to Confirm ? ", {
-			// 			actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CLOSE],
-			// 			onClose: function(oAction) {
-			// 				if (oAction === "OK") {
-			// 					that.oDataModel.create("/S_HEADERSet", createData, null,
-			// 						function(oData) {
-			// 							MessageBox.success("Successfully Confirmed!");
-			// 							that.router.navTo("SAMaster");
-			// 						},
-			// 						function(oError) {
-			// 							try {
-			// 								var error = jQuery.parseJSON(oError.response.body);
-			// 								if (error.error.innererror.errordetails.length > 0) {
-			// 									if (!that.FragConfirmResponse) {
-			// 										that.FragConfirmResponse = sap.ui.xmlfragment("sap.fiori.asncreationsa.view.SAConfirmResponse", this);
-			// 										// that.getView().addDependent(that.FragConfirmResponse);
-			// 										that.FragConfirmResponse.setModel(that.ConfirmFragModel);
-			// 									}
-			// 									var errorLength = error.error.innererror.errordetails.length;
-			// 									error.error.innererror.errordetails.splice(errorLength - 1, 1);
-			// 									that.ConfirmFragModel.setData(error.error.innererror);
-			// 									that.ConfirmFragModel.refresh(true);
-			// 									sap.ui.getCore().byId("fragCloseId").attachPress(that.onFragClose);
-			// 									that.FragConfirmResponse.open();
-			// 								}
-			// 								// MessageBox.error(error.error.message.value);
-			// 							} catch (err) {
-			// 								var errorXML = jQuery.parseXML(oError.getParameter("responseText")).querySelector("message").textContent;
-			// 								MessageBox.error(errorXML);
-			// 							}
-			// 						});
-			// 				}
-			// 			}
-			// 		});
-			// 	}
 		},
-		onFragClose: function (oEvent) {
-			oEvent.getSource().getParent().close();
+
+		onCancelAsn: function (evt) {
+			this.getView().getModel("DecisionModel").setData({});
+			const remarksFrag = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.Remarks", this);
+			this.getView().addDependent(remarksFrag);
+			remarksFrag.open();
 		},
-		onMaterialPress: function (oEvent) {
-			var LineItemData = oEvent.getSource().getParent().getBindingContext("detailModel").getObject();
-			var materialData = [];
-			materialData.push(LineItemData);
-			if (!this._oPopoverFragment) {
-				this._oPopoverFragment = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.DetailPopoverFragment", this);
-				this.TableTempId = sap.ui.getCore().byId("TableTempId").clone();
-				this.getView().addDependent(this._oPopoverFragment);
+		onSubmit: function (evt) {
+			this.dialogSource = evt.getSource();
+			const data = this.getView().getModel("DecisionModel").getData();
+			if (data.Reason !== "") {
+				this.Reason = data.Reason;
+				this.onFinalCancelAsn();
+			} else {
+				MessageBox.error("Please fill reason to proceed");
 			}
-			this._oPopoverFragment.setModel(new JSONModel(materialData), "materialDescModel");
-			this._oPopoverFragment.openBy(oEvent.getSource());
-			// sap.ui.getCore().byId("DeliveryTableId").bindAggregation("items", {
-			// 	path: "/SubcontractMaterialSet?$filter=Ebeln eq '" + this.Schedule_No + "'and Ebelp  eq '" + LineItemData.Item_No + "'",
-			// 	template: this.TableTempId
-			// });
+		},
+		onDialogClose: function (evt) {
+			evt.getSource().destroy();
+		},
+
+		onDialogCancel: function (evt) {
+			evt.getSource().getParent().destroy();
+		},
+		onFinalCancelAsn: function () {
+			sap.ui.core.BusyIndicator.show();
+			var that = this;
+			var form = {
+				"UnitCode": this.UnitCode,
+				"OprCode": this.AddressCode,
+				"ASNNumber": this.AsnNumber,
+				"Reason": this.Reason,
+				"CreatedBy": this.LoggedUser,
+				"CreatedIP": ""
+			};
+			var formdatastr = JSON.stringify(form);
+			this.hardcodedURL = "";
+			if (window.location.href.includes("site")) {
+				this.hardcodedURL = jQuery.sap.getModulePath("sap.fiori.asncreationsa");
+			}
+			var sPath = this.hardcodedURL + `/asnsa/odata/v4/catalog/PostASNCancellation`;
+			$.ajax({
+				type: "POST",
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				url: sPath,
+				data: JSON.stringify({
+					asnData: formdatastr
+				}),
+				context: this,
+				success: function (data, textStatus, jqXHR) {
+					that.dialogSource.getParent().destroy();
+					sap.ui.core.BusyIndicator.hide();
+					that.AsnNum = data.d.PostASNCancellation;
+					MessageBox.success(that.AsnNum + " ASN cancelled succesfully", {
+						actions: [sap.m.MessageBox.Action.OK],
+						icon: sap.m.MessageBox.Icon.SUCCESS,
+						title: "Success",
+						onClose: function (oAction) {
+							if (oAction === "OK") {
+								that.getData();
+							}
+						}
+					});
+				}.bind(this),
+				error: function (error) {
+					sap.ui.core.BusyIndicator.hide();
+					that.dialogSource.getParent().destroy();
+					var errormsg = JSON.parse(error.responseText)
+					MessageBox.error(errormsg.error.message.value);
+				}
+			});
+		},
+		getData: function () {
+			sap.ui.core.BusyIndicator.show();
+			var that = this;
+			var oModel = this.getOwnerComponent().getModel();
+			that.detailModel.setData([]);
+			that.detailModel.refresh();
+			oModel.read("/GetASNDetailList", {
+				urlParameters: {
+					username: this.LoggedUser,
+					AddressCode: this.AddressCode,
+					ASNNumber: this.AsnNumber,
+					UnitCode: this.UnitCode
+				},
+				success: function (oData) {
+					sap.ui.core.BusyIndicator.hide();
+					that.detailModel.setData(oData);
+					that.detailModel.refresh();
+					that._fetchFilesForPoNum(that.AsnNum);
+				},
+				error: function (oError) {
+					sap.ui.core.BusyIndicator.hide();
+					var value = JSON.parse(oError.response.body);
+					MessageBox.error(value.error.message.value);
+				}
+			});
 		}
 
-		/*	onQuantityPress: function(oQuantity) {
-				if (!this.QuantFrag) {
-					this.QuantFrag = sap.ui.xmlfragment("sap.fiori.asncreationsa.view.SAFragRequiredQuan", this);
-					this.getView().addDependent(this.QuantFrag);
-				}
-
-				var sPath = oQuantity.getSource().getBindingContext("detailModel").sPath;
-				var data = this.detailModel.getProperty(sPath);
-				this.popOverModel.setData(data);
-				this.QuantFrag.setModel(this.popOverModel);
-
-				this.QuantFrag.openBy(oQuantity.getSource());
-
-			}*/
 	});
 
 });
