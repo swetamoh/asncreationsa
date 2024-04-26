@@ -28,12 +28,12 @@ sap.ui.define(
               } else {
                 sessionStorage.setItem('AddressCodeASNSA', 'JSE-01-01');
               }
-              this.setHeaders(res.email, res.type[0].substring(0, 1).toUpperCase());
+              this.setHeaders(res.login_name[0], res.type[0].substring(0, 1).toUpperCase());
               
             }
           });
         } else {
-          this.setHeaders("rajeshsehgal@impauto.com", "E");
+          this.setHeaders("RA046 ", "E");
         }
       },
       setHeaders: function (loginId, loginType) {
