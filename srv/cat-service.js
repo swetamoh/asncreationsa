@@ -7,7 +7,8 @@ module.exports = (srv) => {
 
     srv.on('READ', GetASNHeaderList, async (req) => {
         const params = req._queryOptions;
-        let results = await getASNHeaderList(params);
+        const loginid = req.headers.loginid;
+        let results = await getASNHeaderList(params,loginid);
         if (results.error) req.reject(500, results.error);
          // Checking for search parameter
          const searchVal = req._queryOptions && req._queryOptions.$search;
@@ -29,7 +30,8 @@ module.exports = (srv) => {
 
     srv.on('READ', GetASNDetailList, async (req) => {
         const { username, AddressCode, ASNNumber, UnitCode } = req._queryOptions;
-        const results = await getASNDetailList(username, AddressCode, ASNNumber, UnitCode);
+        const loginid = req.headers.loginid;
+        const results = await getASNDetailList(username, AddressCode, ASNNumber, UnitCode,loginid);
         if (results.error) req.reject(500, results.error);
         return results;
     });
@@ -38,8 +40,9 @@ module.exports = (srv) => {
         const asnDataString = req.data.asnData;
         const asnDataParsed = JSON.parse(asnDataString);
         const asnDataFormatted = JSON.stringify(asnDataParsed, null, 2);
+        const loginid = req.headers.loginid;
         try {
-            const response = await PostASNCancellation(asnDataFormatted);
+            const response = await PostASNCancellation(asnDataFormatted, loginid);
             return response;
         } catch (error) {
             console.error('Error in PostASNCancellation API call:', error);
@@ -48,7 +51,7 @@ module.exports = (srv) => {
     });
 };
 
-async function getASNHeaderList(params) {
+async function getASNHeaderList(params, loginid) {
 
     try {
         const {
@@ -56,10 +59,10 @@ async function getASNHeaderList(params) {
             InvoiceStatus, MRNStatus, ApprovedBy
         } = params;
 
-        const token = await generateToken(username),
+        const token = await generateToken(loginid),
             legApi = await cds.connect.to('Legacy'),
             response = await legApi.send({
-            query : `GET GetASNHeaderList?RequestBy='${username}'&AddressCode='${AddressCode}'&PoNumber='${PoNumber}'&ASNNumber='${ASNNumber}'&ASNFromdate='${ASNFromdate}'&ASNTodate='${ASNTodate}'&InvoiceStatus='${InvoiceStatus}'&MRNStatus='${MRNStatus}'&ApprovedBy='${ApprovedBy}'`,
+            query : `GET GetASNHeaderList?RequestBy='${loginid}'&AddressCode='${AddressCode}'&PoNumber='${PoNumber}'&ASNNumber='${ASNNumber}'&ASNFromdate='${ASNFromdate}'&ASNTodate='${ASNTodate}'&InvoiceStatus='${InvoiceStatus}'&MRNStatus='${MRNStatus}'&ApprovedBy='${ApprovedBy}'`,
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -80,13 +83,13 @@ async function getASNHeaderList(params) {
     }
 }
 
-async function getASNDetailList(username, AddressCode, ASNNumber, UnitCode) {
+async function getASNDetailList(username, AddressCode, ASNNumber, UnitCode, loginid) {
     try {
 
-        const token = await generateToken(username),
+        const token = await generateToken(loginid),
         legApi = await cds.connect.to('Legacy'),
         response = await legApi.send({
-            query: `GET GetASNDetailList?RequestBy='${username}'&AddressCode='${AddressCode}'&ASNNumber='${ASNNumber}'&UnitCode='${UnitCode}'`,
+            query: `GET GetASNDetailList?RequestBy='${loginid}'&AddressCode='${AddressCode}'&ASNNumber='${ASNNumber}'&UnitCode='${UnitCode}'`,
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -107,9 +110,9 @@ async function getASNDetailList(username, AddressCode, ASNNumber, UnitCode) {
     }
 }
 
-async function PostASNCancellation(asnData) {
+async function PostASNCancellation(asnData,loginid) {
     try {
-        const token = await generateToken(JSON.parse(asnData).CreatedBy),
+        const token = await generateToken(loginid),
         legApi = await cds.connect.to('Legacy'),
         response = await legApi.send({
             query: `POST PostASNCancellation`,

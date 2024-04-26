@@ -183,7 +183,7 @@ sap.ui.define([
 				"OprCode": this.AddressCode,
 				"ASNNumber": this.AsnNumber,
 				"Reason": this.Reason,
-				"CreatedBy": this.LoggedUser,
+				"CreatedBy": this.getView().getModel().getHeaders().loginId,
 				"CreatedIP": ""
 			};
 			var formdatastr = JSON.stringify(form);
