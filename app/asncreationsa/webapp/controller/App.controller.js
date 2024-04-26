@@ -28,19 +28,23 @@ sap.ui.define(
               } else {
                 sessionStorage.setItem('AddressCodeASNSA', 'JSE-01-01');
               }
-              this.doRoute();
+              this.setHeaders(res.email, res.type[0].substring(0, 1).toUpperCase());
+              
             }
           });
         } else {
-          // $.sap.logData = {
-          //   "companycode": "1000",
-          //   "loginId": "401122",
-          //   "LoginType": "P"
-          // };
-          // this.getView().getModel().setHeaders($.sap.logData);
-          this.doRoute();
+          this.setHeaders("rajeshsehgal@impauto.com", "E");
         }
-      }
+      },
+      setHeaders: function (loginId, loginType) {
+        this.getView().getModel().setHeaders({
+            "loginId": loginId,
+            "loginType": loginType
+        });
+
+        // enable routing
+        this.doRoute();
+    },
     });
   }
 );
