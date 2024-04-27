@@ -23,10 +23,8 @@ sap.ui.define(
             url: modulePath + slash + "user-api/attributes",
             type: "GET",
             success: res => {
-              if (res.login_name[0] !== res.email) {
+              if (!sessionStorage.getItem('AddressCodeASNSA')) {
                 sessionStorage.setItem('AddressCodeASNSA', res.login_name[0]);
-              } else {
-                sessionStorage.setItem('AddressCodeASNSA', 'JSE-01-01');
               }
               this.setHeaders(res.login_name[0], res.type[0].substring(0, 1).toUpperCase());
               
