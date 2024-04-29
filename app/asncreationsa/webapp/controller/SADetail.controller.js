@@ -195,6 +195,7 @@ sap.ui.define([
 			$.ajax({
 				type: "POST",
 				headers: {
+					'loginid': that.getView().getModel().getHeaders().loginId,
 					'Content-Type': 'application/json'
 				},
 				url: sPath,
@@ -276,6 +277,7 @@ sap.ui.define([
 			oUploadedItem.setUrl(sDownloadUrl);
 			oUploadSet.getBinding("items").refresh();
 			oUploadSet.invalidate();
+			MessageBox.success("Invoice updated successfully");
 		},
 		_createEntity: function (item, AsnNum) {
 			var oModel = this.getView().getModel("catalog");

@@ -3,14 +3,15 @@
  */
 
 sap.ui.define([
-        "sap/ui/core/UIComponent",
-        "sap/m/MessageBox",
-        "sap/ui/model/odata/ODataModel",
-        "sap/fiori/asncreationsa/controller/formatter",
-        "sap/ui/Device",
-        "sap/fiori/asncreationsa/model/models"
-    ],
-    function (UIComponent, MessageBox, ODataModel, formatter, Device, models) {
+    "sap/ui/core/UIComponent",
+    "sap/m/MessageBox",
+    "sap/ui/model/odata/ODataModel",
+    "sap/fiori/asncreationsa/controller/formatter",
+    "sap/ui/Device",
+    "sap/fiori/asncreationsa/model/models",
+    "sap/ui/core/routing/HashChanger"
+],
+    function (UIComponent, MessageBox, ODataModel, formatter, Device, models, HashChanger) {
         "use strict";
 
         return UIComponent.extend("sap.fiori.asncreationsa.Component", {
@@ -52,6 +53,22 @@ sap.ui.define([
 
                     // set the device model
                     this.setModel(models.createDeviceModel(), "device");
+                    var site = window.location.href.includes("site");
+                    if (site) {
+                        $.ajax({
+                            url: modulePath + slash + "user-api/attributes",
+                            type: "GET",
+                            success: res => {
+                                if (!sessionStorage.getItem('AddressCodeASNSA')) {
+                                    sessionStorage.setItem('AddressCodeASNSA', res.login_name[0]);
+                                }
+                                this.setHeaders(res.login_name[0], res.type[0].substring(0, 1).toUpperCase());
+
+                            }
+                        });
+                    } else {
+                        this.setHeaders("RA046 ", "E");
+                    }
                 });
 
                 // odata request failed
@@ -63,9 +80,17 @@ sap.ui.define([
                         MessageBox.error(JSON.parse(responseText).error.message.value);
                     }
                 });
+            },
+            setHeaders: function (loginId, loginType) {
+                this.getModel().setHeaders({
+                    "loginId": loginId,
+                    "loginType": loginType
+                });
+        
                 // enable routing
+                HashChanger.getInstance().replaceHash("");
                 this.getRouter().initialize();
-            }
+            },
         });
     }
 );
