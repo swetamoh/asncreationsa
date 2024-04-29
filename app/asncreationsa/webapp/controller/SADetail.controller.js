@@ -84,6 +84,7 @@ sap.ui.define([
 			var that = this;
 			var oModel = this.getView().getModel("catalog");
 			var oUploadSet = this.byId("uploadSet");
+			oUploadSet.setUploadEnabled(true);
 			oUploadSet.removeAllItems();
 			this.userType = this.getView().getModel().getHeaders().loginType;
 			oModel.read("/Files", {
