@@ -49,6 +49,28 @@ module.exports = (srv) => {
             req.reject(400,`${error.message}`);
         }
     });
+
+    srv.on('GetSupplierList', async (req) => {
+        try {
+            const token = await generateToken(req.headers.loginid),
+                legApi = await cds.connect.to('Legacy'),
+                response = await legApi.send({
+                    query: `GET GetSupplierList?RequestBy='${req.headers.loginid}'`,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                });
+
+            if (response.d) {
+                return JSON.parse(response.d);
+            } else {
+                req.reject(500, `Error parsing response: ${response.data}`);
+            }
+        } catch (error) {
+            req.reject(500,error );
+        }
+    });
 };
 
 async function getASNHeaderList(params, loginid) {
