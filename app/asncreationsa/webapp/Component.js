@@ -67,8 +67,8 @@ sap.ui.define([
                             }
                         });
                     } else {
-                        this.setHeaders("RA046 ", "E");
-                        //this.setHeaders("JSE-01-01 ", "P");
+                        //this.setHeaders("RA046 ", "E");
+                        this.setHeaders("AKI-03-01", "P");
                     }
                 });
 

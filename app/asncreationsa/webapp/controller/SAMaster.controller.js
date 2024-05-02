@@ -90,12 +90,11 @@ sap.ui.define([
 			this.ASNfromdate = this.ASNfromdate.substring(0, 2) + " " + this.ASNfromdate.substring(2, 5) + " " + this.ASNfromdate.substring(5, 9);
 
 			this.unitCode = sessionStorage.getItem("unitCode") || "P01";
-			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA");
+			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA") || "AKI-03-01";
 			this.LoggedUser = sessionStorage.getItem("LoggedUser") || "rajeshsehgal@impauto.com";
 			var oModel = this.getOwnerComponent().getModel();
 			oModel.read("/GetASNHeaderList", {
 				urlParameters: {
-					username: this.LoggedUser,
 					AddressCode: this.AddressCodeASNSA,
 					PoNumber: '',
 					ASNNumber: '',
@@ -161,7 +160,6 @@ sap.ui.define([
 				oModel.read("/GetASNHeaderList", {
 					urlParameters: {
 						"search": sValue,
-						username: this.LoggedUser,
 						AddressCode: this.AddressCodeASNSA,
 						PoNumber: '',
 						ASNNumber: '',
@@ -190,119 +188,141 @@ sap.ui.define([
 			oPromise.reject();
 		},
 
-		// onFilter: function () {
-		// 	if (!this.filterFragment) {
-		// 		this.filterFragment = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.filterFragment", this);
-		// 		this.filterFragment.setModel(this.filterModel, "filterModel");
+		onFilter: function () {
+			if (!this.filterFragment) {
+				this.filterFragment = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.filterFragment", this);
+				this.filterFragment.setModel(this.filterModel, "filterModel");
 
+			}
+			this.filterVisibleModel = new sap.ui.model.json.JSONModel({
+				ASNNumber: true,
+				StartDate: true,
+				EndDate: true,
+				Werks: true,
+			});
+
+			this.filterFragment.setModel(this.filterVisibleModel, "FilterVisibleModel");
+			this.filterFragment.open();
+		},
+		onPlantValueHelp: function () {
+			if (!this.PlantF4Frag) {
+				this.PlantF4Frag = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.PlantFrag", this);
+				this.PlantF4Temp = sap.ui.getCore().byId("plantTempId").clone();
+			}
+			this.PlantF4Frag.setModel(new JSONModel(JSON.parse(sessionStorage.getItem("CodeDetails"))), "plantModel");
+			this.getView().addDependent(this.PlantF4Frag);
+			// sap.ui.getCore().byId("plantF4Id").bindAggregation("items", {
+			// 	path: this.plantModel,
+			// 	template: this.PlantF4Temp
+			// });
+			sap.ui.getCore().byId("plantF4Id")._searchField.setVisible(false);
+			this.PlantF4Frag.open();
+		},
+
+		handlePlantClose: function (oEvent) {
+			var data = oEvent.getParameter("selectedItem").getProperty("title");
+			this.desc = oEvent.getParameter("selectedItem").getProperty("description");
+			this.filterModel.getData().Werks = data;
+			this.filterModel.refresh("true");
+			//sessionStorage.setItem("unitCode", data);
+			this.PlantF4Frag.destroy();
+			this.PlantF4Frag = "";
+			//this.getData();
+		},
+
+		handlePlantCancel: function () {
+			this.PlantF4Frag.destroy();
+			this.PlantF4Frag = "";
+		},
+
+		onFilterSubmit: function () {
+			var that = this;
+			var data = this.filterModel.getData();
+
+			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA");
+			var ASNNumber = data.ASNNumber;
+			var StartDate = data.StartDate;
+			var EndDate = data.EndDate;
+			this.fUnitCode = data.Werks;
+
+			var dateFormat1 = sap.ui.core.format.DateFormat.getDateInstance({
+				pattern: "ddMMMyyyy"
+			});
+			if (EndDate === "" && EndDate === null && EndDate === undefined) {
+				EndDate = new Date();
+			}
+			if (StartDate === "" && StartDate === null && StartDate === undefined) {
+				StartDate = new Date(EndDate.getTime() - 30 * 24 * 3600 * 1000);
+			}
+			this.ASNtodate = dateFormat1.format(EndDate);
+			this.ASNfromdate = dateFormat1.format(StartDate);
+			this.ASNtodate = this.ASNtodate.substring(0, 2) + " " + this.ASNtodate.substring(2, 5) + " " + this.ASNtodate.substring(5, 9);
+			this.ASNfromdate = this.ASNfromdate.substring(0, 2) + " " + this.ASNfromdate.substring(2, 5) + " " + this.ASNfromdate.substring(5, 9);
+
+			
+
+				var oModel = this.getOwnerComponent().getModel();
+				oModel.read("/GetASNHeaderList", {
+					urlParameters: {
+						AddressCode: this.AddressCodeASNSA,
+						PoNumber: '',
+						ASNNumber: ASNNumber || '',
+						ASNFromdate: this.ASNfromdate,
+						ASNTodate: this.ASNtodate,
+						InvoiceStatus: '',
+						MRNStatus: '',
+						ApprovedBy: ''
+					},
+					success: function (oData) {
+						sap.ui.core.BusyIndicator.hide();
+						that.PlantCode = oData.results[0].PlantCode;
+						that.ASNStatus = oData.results[0].ASNStatus;
+						that.DataModel.setData(oData);
+						that.DataModel.refresh();
+						that.data = [...oData.results];
+						if(that.fUnitCode) {
+							const fData = that.data.filter(item => item.PlantCode === that.fUnitCode);
+							that.DataModel.setData({ "results": fData });
+						}
+						that.routeToDetail();
+					},
+					error: function (oError) {
+						sap.ui.core.BusyIndicator.hide();
+						var value = JSON.parse(oError.response.body);
+						MessageBox.error(value.error.message.value);
+					}
+				});
+			
+			if (data.Werks) {
+				this.PlantFilter = this.fUnitCode + "(" + this.desc + ")";
+				this.getView().byId("plantFilterId").setText(this.PlantFilter);
+			}
+			this.getView().byId("clearFilterId").setVisible(true);
+			// this.filterModel.setData({});
+			this.filterFragment.close();
+			this.filterFragment.destroy();
+			this.filterFragment = "";
+			this.routeToDetail();
+		},
+		onFilterCancel: function () {
+			this.filterFragment.close();
+			this.filterFragment.destroy();
+			this.filterFragment = "";
+		},
+		onFilterClear: function () {
+			this.getView().byId("clearFilterId").setVisible(false);
+			this.getView().byId("plantFilterId").setText("");
+
+			this.getASNData();
+		},
+		// onFromDateChange: function (oEvent) {
+		// 	var FromDate = this.getView().byId("startDateId").getDateValue();
+		// 	var ToDate = this.getView().byId("endDateId").getDateValue();
+		// 	this.getView().byId("endDateId").setMinDate(FromDate);
+		// 	if (ToDate <= FromDate) {
+		// 		this.getView().byId("endDateId").setDateValue(new Date(FromDate));
 		// 	}
-		// 	this.filterVisibleModel = new sap.ui.model.json.JSONModel({
-		// 		Werks: true,
-		// 		Status: true,
-		// 	});
-
-		// 	this.filterFragment.setModel(this.filterVisibleModel, "FilterVisibleModel");
-		// 	this.filterFragment.open();
-		// },
-		// onPlantValueHelp: function () {
-		// 	if (!this.PlantF4Frag) {
-		// 		this.PlantF4Frag = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.PlantFrag", this);
-		// 		this.PlantF4Temp = sap.ui.getCore().byId("plantTempId").clone();
-		// 	}
-		// 	this.PlantF4Frag.setModel(new JSONModel(JSON.parse(sessionStorage.getItem("CodeDetails"))), "plantModel");
-		// 	this.getView().addDependent(this.PlantF4Frag);
-		// 	// sap.ui.getCore().byId("plantF4Id").bindAggregation("items", {
-		// 	// 	path: this.plantModel,
-		// 	// 	template: this.PlantF4Temp
-		// 	// });
-		// 	sap.ui.getCore().byId("plantF4Id")._searchField.setVisible(false);
-		// 	this.PlantF4Frag.open();
-		// },
-
-		// handlePlantClose: function (oEvent) {
-		// 	var data = oEvent.getParameter("selectedItem").getProperty("title");
-		// 	this.desc = oEvent.getParameter("selectedItem").getProperty("description");
-		// 	this.filterModel.getData().Werks = data;
-		// 	this.filterModel.refresh("true");
-		// 	//sessionStorage.setItem("unitCode", data);
-		// 	this.PlantF4Frag.destroy();
-		// 	this.PlantF4Frag = "";
-		// 	//this.getData();
-		// },
-
-		// handlePlantCancel: function () {
-		// 	this.PlantF4Frag.destroy();
-		// 	this.PlantF4Frag = "";
-		// },
-
-		// onFilterSubmit: function () {
-		// 	var data = this.filterModel.getData();
-
-		// 	this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
-		// 	var Status = data.Status;
-		// 	var unitCode = data.Werks;
-
-		// 	if (!unitCode) {
-		// 		unitCode = sessionStorage.getItem("unitCode") || "P01";
-		// 	}
-
-		// 	if (!Status) {
-		// 		this.getView().byId("masterListId").bindItems({
-		// 			path: "/PurchaseOrders",
-		// 			parameters: {
-		// 				custom: {
-		// 					AddressCode: this.AddressCodePO,
-		// 					UnitCode: unitCode
-		// 				},
-		// 				countMode: 'None'
-		// 			},
-		// 			template: this._listTemp
-		// 		});
-		// 	} else {
-		// 		this.getView().byId("masterListId").bindItems({
-		// 			path: "/PurchaseOrders?search=" + Status,
-		// 			parameters: {
-		// 				custom: {
-		// 					AddressCode: this.AddressCodePO,
-		// 					UnitCode: unitCode
-		// 				}
-		// 			},
-		// 			template: this._listTemp
-		// 		});
-		// 	}
-		// 	if (data.Werks) {
-		// 		this.PlantFilter = unitCode + "(" + this.desc + ")";
-		// 		this.getView().byId("plantFilterId").setText(this.PlantFilter);
-		// 	}
-		// 	this.getView().byId("clearFilterId").setVisible(true);
-		// 	// this.filterModel.setData({});
-		// 	this.filterFragment.close();
-		// 	this.filterFragment.destroy();
-		// 	this.filterFragment = "";
-		// 	this.routeToDetail();
-		// },
-		// onFilterCancel: function () {
-		// 	this.filterFragment.close();
-		// 	this.filterFragment.destroy();
-		// 	this.filterFragment = "";
-		// },
-		// onFilterClear: function () {
-		// 	this.getView().byId("clearFilterId").setVisible(false);
-		// 	this.getView().byId("plantFilterId").setText("");
-		// 	var unitCode = sessionStorage.getItem("unitCode") || "P01";
-		// 	this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
-		// 	this.getView().byId("masterListId").bindItems({
-		// 		path: "/PurchaseOrders",
-		// 		parameters: {
-		// 			custom: {
-		// 				AddressCode: this.AddressCodePO,
-		// 				UnitCode: unitCode
-		// 			},
-		// 			countMode: 'None'
-		// 		},
-		// 		template: this._listTemp
-		// 	});
-		// 	this.routeToDetail();
+		// 	oEvent.getSource().$().find('INPUT').attr('disabled', true).css('color', '#000000');
 		// },
 	});
 });
