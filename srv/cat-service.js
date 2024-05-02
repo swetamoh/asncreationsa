@@ -29,9 +29,9 @@ module.exports = (srv) => {
     });
 
     srv.on('READ', GetASNDetailList, async (req) => {
-        const { username, AddressCode, ASNNumber, UnitCode } = req._queryOptions;
+        const { AddressCode, ASNNumber, UnitCode } = req._queryOptions;
         const loginid = req.headers.loginid;
-        const results = await getASNDetailList(username, AddressCode, ASNNumber, UnitCode,loginid);
+        const results = await getASNDetailList(AddressCode, ASNNumber, UnitCode,loginid);
         if (results.error) req.reject(500, results.error);
         return results;
     });
@@ -77,7 +77,7 @@ async function getASNHeaderList(params, loginid) {
 
     try {
         const {
-            username, AddressCode, PoNumber, ASNNumber, ASNFromdate, ASNTodate,
+            AddressCode, PoNumber, ASNNumber, ASNFromdate, ASNTodate,
             InvoiceStatus, MRNStatus, ApprovedBy
         } = params;
 
@@ -105,7 +105,7 @@ async function getASNHeaderList(params, loginid) {
     }
 }
 
-async function getASNDetailList(username, AddressCode, ASNNumber, UnitCode, loginid) {
+async function getASNDetailList(AddressCode, ASNNumber, UnitCode, loginid) {
     try {
 
         const token = await generateToken(loginid),

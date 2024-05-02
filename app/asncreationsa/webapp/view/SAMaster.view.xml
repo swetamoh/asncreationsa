@@ -22,9 +22,9 @@
 		<footer>
 			<Bar id="_IDGenBar1">
 				<contentLeft>
-					<!-- <Button id="FilterId" visible="true" icon="sap-icon://filter" press="onPlantValueHelp" type="Emphasized"/>
+					<Button id="FilterId" visible="true" icon="sap-icon://filter" press="onFilter" type="Emphasized"/>
 					<Button id="clearFilterId" visible="false" icon="sap-icon://clear-filter" press="onFilterClear" type="Emphasized"/>
-					<Label id="plantFilterId" design="Bold"/> -->
+					<Label id="plantFilterId" design="Bold"/>
 				</contentLeft>
 			</Bar>
 		</footer>
