@@ -24,6 +24,59 @@ sap.ui.define([
 			if (oEvent.getParameter("name") !== "SAMaster") {
 				return;
 			}
+			var that = this;
+			this.userType = this.getOwnerComponent().getModel().getHeaders().loginType;
+			if (that.userType === "P") {
+				this.getASNData();
+			} else {
+				sap.ui.core.BusyIndicator.show();
+				this.suppData = [];
+				return new Promise((resolve, reject) => {
+					this.getOwnerComponent().getModel().callFunction("/GetSupplierList", {
+						method: "GET",
+						success: (oData) => {
+							sap.ui.core.BusyIndicator.hide();
+							this.suppData = oData.results;
+							this.openDialog();
+							resolve();
+						},
+						error: (oError) => {
+							sap.ui.core.BusyIndicator.hide();
+							// reject(new Error("Failed to fetch supplier data."));
+							var value = JSON.parse(oError.response.body);
+							MessageBox.error(value.error.message.value);
+						}
+					});
+				});
+			}
+		},
+		openDialog() {
+			this.dialog = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.Dialog", this);
+
+			this.dialog.setModel(new JSONModel([]), "SupplierModel");
+			this.dialog.getModel("SupplierModel").setSizeLimit(this.suppData.length);
+			this.dialog.getModel("SupplierModel").setData(this.suppData);
+
+			this.dialog.open();
+		},
+		onApplyPress: function (evt) {
+			let validate = [];
+			const suppList = sap.ui.getCore().byId("suppList");
+			if (suppList.getSelectedKey() !== "") {
+				validate.push(true);
+				suppList.setValueState("None");
+				sessionStorage.setItem("AddressCodeASNSA", suppList.getSelectedKey());
+			} else {
+				validate.push(false);
+				suppList.setValueState("Error");
+			}
+			if (validate.every(item => item === true)) {
+				evt.getSource().getParent().destroy();
+				this.getASNData();
+			}
+
+		},
+		getASNData: function () {
 			sap.ui.core.BusyIndicator.show();
 			var that = this;
 			var dateFormat1 = sap.ui.core.format.DateFormat.getDateInstance({
@@ -133,163 +186,123 @@ sap.ui.define([
 				});
 			}
 		},
-
-		onFilter: function () {
-			if (!this.filterFragment) {
-				this.filterFragment = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.filterFragment", this);
-				this.filterFragment.setModel(this.filterModel, "filterModel");
-
-			}
-			this.filterVisibleModel = new sap.ui.model.json.JSONModel({
-				Werks: true,
-				Status: true,
-			});
-
-			this.filterFragment.setModel(this.filterVisibleModel, "FilterVisibleModel");
-			this.filterFragment.open();
-		},
-		onPlantValueHelp: function () {
-			if (!this.PlantF4Frag) {
-				this.PlantF4Frag = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.PlantFrag", this);
-				this.PlantF4Temp = sap.ui.getCore().byId("plantTempId").clone();
-			}
-			this.PlantF4Frag.setModel(new JSONModel(JSON.parse(sessionStorage.getItem("CodeDetails"))), "plantModel");
-			this.getView().addDependent(this.PlantF4Frag);
-			// sap.ui.getCore().byId("plantF4Id").bindAggregation("items", {
-			// 	path: this.plantModel,
-			// 	template: this.PlantF4Temp
-			// });
-			sap.ui.getCore().byId("plantF4Id")._searchField.setVisible(false);
-			this.PlantF4Frag.open();
+		onDialogEscapeHandler: function (oPromise) {
+			oPromise.reject();
 		},
 
-		handlePlantClose: function (oEvent) {
-			var data = oEvent.getParameter("selectedItem").getProperty("title");
-			this.desc = oEvent.getParameter("selectedItem").getProperty("description");
-			this.filterModel.getData().Werks = data;
-			this.filterModel.refresh("true");
-			//sessionStorage.setItem("unitCode", data);
-			this.PlantF4Frag.destroy();
-			this.PlantF4Frag = "";
-			//this.getData();
-		},
+		// onFilter: function () {
+		// 	if (!this.filterFragment) {
+		// 		this.filterFragment = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.filterFragment", this);
+		// 		this.filterFragment.setModel(this.filterModel, "filterModel");
 
-		handlePlantCancel: function () {
-			this.PlantF4Frag.destroy();
-			this.PlantF4Frag = "";
-		},
-		// onStatusValueHelp: function () {
-		// 	if (!this.StatusF4Frag) {
-		// 		this.StatusF4Frag = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.StatusFrag", this);
-		// 		this.StatusF4Temp = sap.ui.getCore().byId("statusTempId").clone();
 		// 	}
-		// 	var statusData = [
-		// 		{
-		// 			status: "Invoice Submitted"
-		// 		},{
-		// 			status: "Invoice Submission Pending"
-		// 		}
-		// 	];
-		// 	this.StatusF4Frag.setModel(new JSONModel(statusData), "statusModel");
-		// 	this.getView().addDependent(this.StatusF4Frag);
+		// 	this.filterVisibleModel = new sap.ui.model.json.JSONModel({
+		// 		Werks: true,
+		// 		Status: true,
+		// 	});
+
+		// 	this.filterFragment.setModel(this.filterVisibleModel, "FilterVisibleModel");
+		// 	this.filterFragment.open();
+		// },
+		// onPlantValueHelp: function () {
+		// 	if (!this.PlantF4Frag) {
+		// 		this.PlantF4Frag = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.PlantFrag", this);
+		// 		this.PlantF4Temp = sap.ui.getCore().byId("plantTempId").clone();
+		// 	}
+		// 	this.PlantF4Frag.setModel(new JSONModel(JSON.parse(sessionStorage.getItem("CodeDetails"))), "plantModel");
+		// 	this.getView().addDependent(this.PlantF4Frag);
 		// 	// sap.ui.getCore().byId("plantF4Id").bindAggregation("items", {
 		// 	// 	path: this.plantModel,
 		// 	// 	template: this.PlantF4Temp
 		// 	// });
-		// 	sap.ui.getCore().byId("statusF4Id")._searchField.setVisible(false);
-		// 	this.StatusF4Frag.open();
+		// 	sap.ui.getCore().byId("plantF4Id")._searchField.setVisible(false);
+		// 	this.PlantF4Frag.open();
 		// },
 
-		// handleStatusClose: function (oEvent) {
+		// handlePlantClose: function (oEvent) {
 		// 	var data = oEvent.getParameter("selectedItem").getProperty("title");
-		// 	this.StatusF4Frag.destroy();
-		// 	this.StatusF4Frag = "";
-		// 	var unitCode = sessionStorage.getItem("unitCode");
+		// 	this.desc = oEvent.getParameter("selectedItem").getProperty("description");
+		// 	this.filterModel.getData().Werks = data;
+		// 	this.filterModel.refresh("true");
+		// 	//sessionStorage.setItem("unitCode", data);
+		// 	this.PlantF4Frag.destroy();
+		// 	this.PlantF4Frag = "";
+		// 	//this.getData();
+		// },
+
+		// handlePlantCancel: function () {
+		// 	this.PlantF4Frag.destroy();
+		// 	this.PlantF4Frag = "";
+		// },
+
+		// onFilterSubmit: function () {
+		// 	var data = this.filterModel.getData();
+
+		// 	this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
+		// 	var Status = data.Status;
+		// 	var unitCode = data.Werks;
+
+		// 	if (!unitCode) {
+		// 		unitCode = sessionStorage.getItem("unitCode") || "P01";
+		// 	}
+
+		// 	if (!Status) {
+		// 		this.getView().byId("masterListId").bindItems({
+		// 			path: "/PurchaseOrders",
+		// 			parameters: {
+		// 				custom: {
+		// 					AddressCode: this.AddressCodePO,
+		// 					UnitCode: unitCode
+		// 				},
+		// 				countMode: 'None'
+		// 			},
+		// 			template: this._listTemp
+		// 		});
+		// 	} else {
+		// 		this.getView().byId("masterListId").bindItems({
+		// 			path: "/PurchaseOrders?search=" + Status,
+		// 			parameters: {
+		// 				custom: {
+		// 					AddressCode: this.AddressCodePO,
+		// 					UnitCode: unitCode
+		// 				}
+		// 			},
+		// 			template: this._listTemp
+		// 		});
+		// 	}
+		// 	if (data.Werks) {
+		// 		this.PlantFilter = unitCode + "(" + this.desc + ")";
+		// 		this.getView().byId("plantFilterId").setText(this.PlantFilter);
+		// 	}
+		// 	this.getView().byId("clearFilterId").setVisible(true);
+		// 	// this.filterModel.setData({});
+		// 	this.filterFragment.close();
+		// 	this.filterFragment.destroy();
+		// 	this.filterFragment = "";
+		// 	this.routeToDetail();
+		// },
+		// onFilterCancel: function () {
+		// 	this.filterFragment.close();
+		// 	this.filterFragment.destroy();
+		// 	this.filterFragment = "";
+		// },
+		// onFilterClear: function () {
+		// 	this.getView().byId("clearFilterId").setVisible(false);
+		// 	this.getView().byId("plantFilterId").setText("");
+		// 	var unitCode = sessionStorage.getItem("unitCode") || "P01";
+		// 	this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
 		// 	this.getView().byId("masterListId").bindItems({
-		// 		path: "/PurchaseOrders?search=" + data,
+		// 		path: "/PurchaseOrders",
 		// 		parameters: {
 		// 			custom: {
 		// 				AddressCode: this.AddressCodePO,
 		// 				UnitCode: unitCode
-		// 			}
+		// 			},
+		// 			countMode: 'None'
 		// 		},
 		// 		template: this._listTemp
 		// 	});
-		// 	this._getFirstItem();
+		// 	this.routeToDetail();
 		// },
-
-		// handleStatusCancel: function () {
-		// 	this.StatusF4Frag.destroy();
-		// 	this.StatusF4Frag = "";
-		// },
-		onFilterSubmit: function () {
-			var data = this.filterModel.getData();
-
-			this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
-			var Status = data.Status;
-			var unitCode = data.Werks;
-
-			if (!unitCode) {
-				unitCode = sessionStorage.getItem("unitCode") || "P01";
-			}
-
-			if (!Status) {
-				this.getView().byId("masterListId").bindItems({
-					path: "/PurchaseOrders",
-					parameters: {
-						custom: {
-							AddressCode: this.AddressCodePO,
-							UnitCode: unitCode
-						},
-						countMode: 'None'
-					},
-					template: this._listTemp
-				});
-			} else {
-				this.getView().byId("masterListId").bindItems({
-					path: "/PurchaseOrders?search=" + Status,
-					parameters: {
-						custom: {
-							AddressCode: this.AddressCodePO,
-							UnitCode: unitCode
-						}
-					},
-					template: this._listTemp
-				});
-			}
-			if (data.Werks) {
-				this.PlantFilter = unitCode + "(" + this.desc + ")";
-				this.getView().byId("plantFilterId").setText(this.PlantFilter);
-			}
-			this.getView().byId("clearFilterId").setVisible(true);
-			// this.filterModel.setData({});
-			this.filterFragment.close();
-			this.filterFragment.destroy();
-			this.filterFragment = "";
-			this.routeToDetail();
-		},
-		onFilterCancel: function () {
-			this.filterFragment.close();
-			this.filterFragment.destroy();
-			this.filterFragment = "";
-		},
-		onFilterClear: function () {
-			this.getView().byId("clearFilterId").setVisible(false);
-			this.getView().byId("plantFilterId").setText("");
-			var unitCode = sessionStorage.getItem("unitCode") || "P01";
-			this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
-			this.getView().byId("masterListId").bindItems({
-				path: "/PurchaseOrders",
-				parameters: {
-					custom: {
-						AddressCode: this.AddressCodePO,
-						UnitCode: unitCode
-					},
-					countMode: 'None'
-				},
-				template: this._listTemp
-			});
-			this.routeToDetail();
-		},
 	});
 });
