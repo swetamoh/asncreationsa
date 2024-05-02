@@ -24,6 +24,59 @@ sap.ui.define([
 			if (oEvent.getParameter("name") !== "SAMaster") {
 				return;
 			}
+			var that = this;
+			this.userType = this.getOwnerComponent().getModel().getHeaders().loginType;
+			if (that.userType === "P") {
+				this.getASNData();
+			} else {
+				sap.ui.core.BusyIndicator.show();
+				this.suppData = [];
+				return new Promise((resolve, reject) => {
+					this.getOwnerComponent().getModel().callFunction("/GetSupplierList", {
+						method: "GET",
+						success: (oData) => {
+							sap.ui.core.BusyIndicator.hide();
+							this.suppData = oData.results;
+							this.openDialog();
+							resolve();
+						},
+						error: (oError) => {
+							sap.ui.core.BusyIndicator.hide();
+							// reject(new Error("Failed to fetch supplier data."));
+							var value = JSON.parse(oError.response.body);
+							MessageBox.error(value.error.message.value);
+						}
+					});
+				});
+			}
+		},
+		openDialog() {
+			this.dialog = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.Dialog", this);
+
+			this.dialog.setModel(new JSONModel([]), "SupplierModel");
+			this.dialog.getModel("SupplierModel").setSizeLimit(this.suppData.length);
+			this.dialog.getModel("SupplierModel").setData(this.suppData);
+
+			this.dialog.open();
+		},
+		onApplyPress: function (evt) {
+			let validate = [];
+			const suppList = sap.ui.getCore().byId("suppList");
+			if (suppList.getSelectedKey() !== "") {
+				validate.push(true);
+				suppList.setValueState("None");
+				sessionStorage.setItem("AddressCodeASNSA", suppList.getSelectedKey());
+			} else {
+				validate.push(false);
+				suppList.setValueState("Error");
+			}
+			if (validate.every(item => item === true)) {
+				evt.getSource().getParent().destroy();
+				this.getASNData();
+			}
+
+		},
+		getASNData: function () {
 			sap.ui.core.BusyIndicator.show();
 			var that = this;
 			var dateFormat1 = sap.ui.core.format.DateFormat.getDateInstance({
@@ -37,12 +90,11 @@ sap.ui.define([
 			this.ASNfromdate = this.ASNfromdate.substring(0, 2) + " " + this.ASNfromdate.substring(2, 5) + " " + this.ASNfromdate.substring(5, 9);
 
 			this.unitCode = sessionStorage.getItem("unitCode") || "P01";
-			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA") || 'JSE-01-01';
+			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA") || "AKI-03-01";
 			this.LoggedUser = sessionStorage.getItem("LoggedUser") || "rajeshsehgal@impauto.com";
 			var oModel = this.getOwnerComponent().getModel();
 			oModel.read("/GetASNHeaderList", {
 				urlParameters: {
-					username: this.LoggedUser,
 					AddressCode: this.AddressCodeASNSA,
 					PoNumber: '',
 					ASNNumber: '',
@@ -98,6 +150,7 @@ sap.ui.define([
 		},
 
 		onSearch: function (evt) {
+			var that = this;
 			if (evt.getParameter("refreshButtonPressed") === true) {
 				this.getView().byId("masterListId").getBinding("items").refresh(true);
 			} else {
@@ -107,7 +160,6 @@ sap.ui.define([
 				oModel.read("/GetASNHeaderList", {
 					urlParameters: {
 						"search": sValue,
-						username: this.LoggedUser,
 						AddressCode: this.AddressCodeASNSA,
 						PoNumber: '',
 						ASNNumber: '',
@@ -119,10 +171,10 @@ sap.ui.define([
 					},
 					success: function (oData) {
 						sap.ui.core.BusyIndicator.hide();
-						this.PlantCode = oData.results[0].PlantCode;
+						that.PlantCode = oData.results[0].PlantCode;
 						that.DataModel.setData(oData);
 						that.DataModel.refresh();
-						this.routeToDetail();
+						that.routeToDetail();
 					},
 					error: function (oError) {
 						sap.ui.core.BusyIndicator.hide();
@@ -132,6 +184,9 @@ sap.ui.define([
 				});
 			}
 		},
+		onDialogEscapeHandler: function (oPromise) {
+			oPromise.reject();
+		},
 
 		onFilter: function () {
 			if (!this.filterFragment) {
@@ -140,8 +195,10 @@ sap.ui.define([
 
 			}
 			this.filterVisibleModel = new sap.ui.model.json.JSONModel({
+				ASNNumber: true,
+				StartDate: true,
+				EndDate: true,
 				Werks: true,
-				Status: true,
 			});
 
 			this.filterFragment.setModel(this.filterVisibleModel, "FilterVisibleModel");
@@ -177,87 +234,67 @@ sap.ui.define([
 			this.PlantF4Frag.destroy();
 			this.PlantF4Frag = "";
 		},
-		// onStatusValueHelp: function () {
-		// 	if (!this.StatusF4Frag) {
-		// 		this.StatusF4Frag = sap.ui.xmlfragment("sap.fiori.asncreationsa.fragment.StatusFrag", this);
-		// 		this.StatusF4Temp = sap.ui.getCore().byId("statusTempId").clone();
-		// 	}
-		// 	var statusData = [
-		// 		{
-		// 			status: "Invoice Submitted"
-		// 		},{
-		// 			status: "Invoice Submission Pending"
-		// 		}
-		// 	];
-		// 	this.StatusF4Frag.setModel(new JSONModel(statusData), "statusModel");
-		// 	this.getView().addDependent(this.StatusF4Frag);
-		// 	// sap.ui.getCore().byId("plantF4Id").bindAggregation("items", {
-		// 	// 	path: this.plantModel,
-		// 	// 	template: this.PlantF4Temp
-		// 	// });
-		// 	sap.ui.getCore().byId("statusF4Id")._searchField.setVisible(false);
-		// 	this.StatusF4Frag.open();
-		// },
 
-		// handleStatusClose: function (oEvent) {
-		// 	var data = oEvent.getParameter("selectedItem").getProperty("title");
-		// 	this.StatusF4Frag.destroy();
-		// 	this.StatusF4Frag = "";
-		// 	var unitCode = sessionStorage.getItem("unitCode");
-		// 	this.getView().byId("masterListId").bindItems({
-		// 		path: "/PurchaseOrders?search=" + data,
-		// 		parameters: {
-		// 			custom: {
-		// 				AddressCode: this.AddressCodePO,
-		// 				UnitCode: unitCode
-		// 			}
-		// 		},
-		// 		template: this._listTemp
-		// 	});
-		// 	this._getFirstItem();
-		// },
-
-		// handleStatusCancel: function () {
-		// 	this.StatusF4Frag.destroy();
-		// 	this.StatusF4Frag = "";
-		// },
 		onFilterSubmit: function () {
+			var that = this;
 			var data = this.filterModel.getData();
 
-			this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
-			var Status = data.Status;
-			var unitCode = data.Werks;
+			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA");
+			var ASNNumber = data.ASNNumber;
+			var StartDate = data.StartDate;
+			var EndDate = data.EndDate;
+			this.fUnitCode = data.Werks;
 
-			if (!unitCode) {
-				unitCode = sessionStorage.getItem("unitCode") || "P01";
+			var dateFormat1 = sap.ui.core.format.DateFormat.getDateInstance({
+				pattern: "ddMMMyyyy"
+			});
+			if (EndDate === "" && EndDate === null && EndDate === undefined) {
+				EndDate = new Date();
 			}
+			if (StartDate === "" && StartDate === null && StartDate === undefined) {
+				StartDate = new Date(EndDate.getTime() - 30 * 24 * 3600 * 1000);
+			}
+			this.ASNtodate = dateFormat1.format(EndDate);
+			this.ASNfromdate = dateFormat1.format(StartDate);
+			this.ASNtodate = this.ASNtodate.substring(0, 2) + " " + this.ASNtodate.substring(2, 5) + " " + this.ASNtodate.substring(5, 9);
+			this.ASNfromdate = this.ASNfromdate.substring(0, 2) + " " + this.ASNfromdate.substring(2, 5) + " " + this.ASNfromdate.substring(5, 9);
 
-			if (!Status) {
-				this.getView().byId("masterListId").bindItems({
-					path: "/PurchaseOrders",
-					parameters: {
-						custom: {
-							AddressCode: this.AddressCodePO,
-							UnitCode: unitCode
-						},
-						countMode: 'None'
+			
+
+				var oModel = this.getOwnerComponent().getModel();
+				oModel.read("/GetASNHeaderList", {
+					urlParameters: {
+						AddressCode: this.AddressCodeASNSA,
+						PoNumber: '',
+						ASNNumber: ASNNumber || '',
+						ASNFromdate: this.ASNfromdate,
+						ASNTodate: this.ASNtodate,
+						InvoiceStatus: '',
+						MRNStatus: '',
+						ApprovedBy: ''
 					},
-					template: this._listTemp
-				});
-			} else {
-				this.getView().byId("masterListId").bindItems({
-					path: "/PurchaseOrders?search=" + Status,
-					parameters: {
-						custom: {
-							AddressCode: this.AddressCodePO,
-							UnitCode: unitCode
+					success: function (oData) {
+						sap.ui.core.BusyIndicator.hide();
+						that.PlantCode = oData.results[0].PlantCode;
+						that.ASNStatus = oData.results[0].ASNStatus;
+						that.DataModel.setData(oData);
+						that.DataModel.refresh();
+						that.data = [...oData.results];
+						if(that.fUnitCode) {
+							const fData = that.data.filter(item => item.PlantCode === that.fUnitCode);
+							that.DataModel.setData({ "results": fData });
 						}
+						that.routeToDetail();
 					},
-					template: this._listTemp
+					error: function (oError) {
+						sap.ui.core.BusyIndicator.hide();
+						var value = JSON.parse(oError.response.body);
+						MessageBox.error(value.error.message.value);
+					}
 				});
-			}
+			
 			if (data.Werks) {
-				this.PlantFilter = unitCode + "(" + this.desc + ")";
+				this.PlantFilter = this.fUnitCode + "(" + this.desc + ")";
 				this.getView().byId("plantFilterId").setText(this.PlantFilter);
 			}
 			this.getView().byId("clearFilterId").setVisible(true);
@@ -275,20 +312,17 @@ sap.ui.define([
 		onFilterClear: function () {
 			this.getView().byId("clearFilterId").setVisible(false);
 			this.getView().byId("plantFilterId").setText("");
-			var unitCode = sessionStorage.getItem("unitCode") || "P01";
-			this.AddressCodePO = sessionStorage.getItem("AddressCodePO") || 'JSE-01-01';
-			this.getView().byId("masterListId").bindItems({
-				path: "/PurchaseOrders",
-				parameters: {
-					custom: {
-						AddressCode: this.AddressCodePO,
-						UnitCode: unitCode
-					},
-					countMode: 'None'
-				},
-				template: this._listTemp
-			});
-			this.routeToDetail();
+
+			this.getASNData();
 		},
+		// onFromDateChange: function (oEvent) {
+		// 	var FromDate = this.getView().byId("startDateId").getDateValue();
+		// 	var ToDate = this.getView().byId("endDateId").getDateValue();
+		// 	this.getView().byId("endDateId").setMinDate(FromDate);
+		// 	if (ToDate <= FromDate) {
+		// 		this.getView().byId("endDateId").setDateValue(new Date(FromDate));
+		// 	}
+		// 	oEvent.getSource().$().find('INPUT').attr('disabled', true).css('color', '#000000');
+		// },
 	});
 });

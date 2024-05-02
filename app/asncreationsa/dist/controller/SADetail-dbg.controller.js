@@ -60,7 +60,6 @@ sap.ui.define([
 
 				oModel.read("/GetASNDetailList", {
 					urlParameters: {
-						username: this.LoggedUser,
 						AddressCode: this.AddressCode,
 						ASNNumber: this.AsnNumber,
 						UnitCode: this.UnitCode
@@ -81,10 +80,12 @@ sap.ui.define([
 			}
 		},
 		_fetchFilesForPoNum: function (AsnNum) {
+			var that = this;
 			var oModel = this.getView().getModel("catalog");
 			var oUploadSet = this.byId("uploadSet");
+			oUploadSet.setUploadEnabled(true);
 			oUploadSet.removeAllItems();
-
+			this.userType = this.getView().getModel().getHeaders().loginType;
 			oModel.read("/Files", {
 				filters: [new sap.ui.model.Filter("AsnNum", sap.ui.model.FilterOperator.EQ, AsnNum)],
 				success: function (oData) {
@@ -99,7 +100,10 @@ sap.ui.define([
 								new sap.m.ObjectAttribute({ title: "File Size", text: fileData.size.toString() })
 							]
 						});
-
+						if(that.userType === "P" && that.ASNStatus !== "PENDING"){
+							that.byId("uploadSet").setUploadEnabled(false);
+							oItem.setVisibleEdit(false).setVisibleRemove(false);
+						}
 						oUploadSet.addItem(oItem);
 					});
 				},
@@ -179,7 +183,7 @@ sap.ui.define([
 				"OprCode": this.AddressCode,
 				"ASNNumber": this.AsnNumber,
 				"Reason": this.Reason,
-				"CreatedBy": this.LoggedUser,
+				"CreatedBy": this.getView().getModel().getHeaders().loginId,
 				"CreatedIP": ""
 			};
 			var formdatastr = JSON.stringify(form);
@@ -191,6 +195,7 @@ sap.ui.define([
 			$.ajax({
 				type: "POST",
 				headers: {
+					'loginid': that.getView().getModel().getHeaders().loginId,
 					'Content-Type': 'application/json'
 				},
 				url: sPath,
@@ -201,14 +206,14 @@ sap.ui.define([
 				success: function (data, textStatus, jqXHR) {
 					that.dialogSource.getParent().destroy();
 					sap.ui.core.BusyIndicator.hide();
-					that.AsnNum = data.d.PostASNCancellation;
-					MessageBox.success(that.AsnNum + " ASN cancelled succesfully", {
+					//that.AsnNum = data.d.PostASNCancellation;
+					MessageBox.success(" ASN cancelled succesfully", {
 						actions: [sap.m.MessageBox.Action.OK],
 						icon: sap.m.MessageBox.Icon.SUCCESS,
 						title: "Success",
 						onClose: function (oAction) {
 							if (oAction === "OK") {
-								that.getData();
+								that.router.navTo('SAMaster');
 							}
 						}
 					});
@@ -229,7 +234,6 @@ sap.ui.define([
 			that.detailModel.refresh();
 			oModel.read("/GetASNDetailList", {
 				urlParameters: {
-					username: this.LoggedUser,
 					AddressCode: this.AddressCode,
 					ASNNumber: this.AsnNumber,
 					UnitCode: this.UnitCode
@@ -246,7 +250,74 @@ sap.ui.define([
 					MessageBox.error(value.error.message.value);
 				}
 			});
-		}
+		},
+		onAfterItemAdded: function (oEvent) {
+			var itemsAdded = this.byId("uploadSet").getItems();
+			if(itemsAdded.length > 0){
+				MessageBox.error("Invoice attachment already exists.");
+				return;
+			}
+			this.item = oEvent.getParameter("item");
+			this._createEntity(this.item, this.AsnNum)
+			.then(() => {
+				this._uploadContent(this.item, this.AsnNum);
+			})
+			.catch((err) => {
+				console.log("Error: " + err);
+			})
+		},
+
+		onUploadCompleted: function (oEvent) {
+			var oUploadSet = this.byId("uploadSet");
+			var oUploadedItem = oEvent.getParameter("item");
+			var sUploadUrl = oUploadedItem.getUploadUrl();
+
+			var sDownloadUrl = sUploadUrl
+			oUploadedItem.setUrl(sDownloadUrl);
+			oUploadSet.getBinding("items").refresh();
+			oUploadSet.invalidate();
+			MessageBox.success("Invoice updated successfully");
+		},
+		_createEntity: function (item, AsnNum) {
+			var oModel = this.getView().getModel("catalog");
+			this.hardcodedURL = "";
+			if (window.location.href.includes("site")) {
+				this.hardcodedURL = jQuery.sap.getModulePath("sap.fiori.asncreationsa");
+			}
+			var oData = {
+				AsnNum: AsnNum,
+				mediaType: item.getMediaType(),
+				fileName: item.getFileName(),
+				size: item.getFileObject().size,
+				url: this.hardcodedURL + `/sa/odata/v4/catalog/Files(AsnNum='${AsnNum}')/content`,
+				//url: this.getView().getModel().sServiceUrl + `/Files(SchNum_ScheduleNum='${schNum}')/content`
+
+			};
+
+			return new Promise((resolve, reject) => {
+				oModel.update(`/Files(AsnNum='${AsnNum}')`, oData, {
+					success: function () {
+						resolve();
+					},
+					error: function (oError) {
+						console.log("Error: ", oError);
+						reject(oError);
+					}
+				});
+			});
+		},
+
+		_uploadContent: function (item, AsnNum) {
+			this.hardcodedURL = "";
+			if (window.location.href.includes("site")) {
+				this.hardcodedURL = jQuery.sap.getModulePath("sap.fiori.asncreationsa");
+			}
+			var url = this.hardcodedURL + `/sa/odata/v4/catalog/Files(AsnNum='${AsnNum}')/content`
+			item.setUploadUrl(url);
+			var oUploadSet = this.byId("uploadSet");
+			oUploadSet.setHttpRequestMethod("PUT")
+			oUploadSet.uploadItem(item);
+		},
 
 	});
 

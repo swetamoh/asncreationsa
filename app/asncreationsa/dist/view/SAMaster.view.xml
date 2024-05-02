@@ -1,22 +1,20 @@
 <mvc:View xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="sap.fiori.asncreationsa.controller.SAMaster">
-	<Page id="_IDGenPage1" title="Advanced Shipping Notes" titleAlignment="Center">
+	<Page id="_IDGenPage1" title="Advance Shipping Notes" titleAlignment="Center">
 		<SearchField id="_IDGenSearchField1" width="100%" search="onSearch" placeholder="Search" showRefreshButton="true"/>
 		<content>
 			<List id="masterListId" items="{DataModel>/results}" mode="SingleSelectMaster" growing="true" growingThreshold="20" growingScrollToLoad="true"
 				selectionChange="onListItemPress">
 				<items>
 					<ObjectListItem class="schAg" title="{DataModel>ASNNumber}" press="onListItemPress" type="Active" id="idlistitem">
-					
-						<!-- <secondStatus>
-						   <ObjectStatus id="_IDGenObjectStatus2" text="{UpdatedBy}"/>
-						</secondStatus> -->
 						<attributes>
 							<!-- <ObjectAttribute id="_IDGenObjectAttribute3" text="{PoNum}"/> -->
 							<ObjectAttribute id="_IDGenObjectAttribute1" title="Plant" text="{DataModel>PlantCode}" visible="{= ${{DataModel>PlantCode}} !== ''}"/>
 							<ObjectAttribute id="_IDGenObjectAttribute2" text="{DataModel>PlantName}" visible="{= ${DataModel>PlantName} !== ''}"/>
-							<ObjectAttribute id="_IDGenObjectAttribute3" text="{DataModel>ASNDate}"/>
-							<ObjectAttribute id="_IDGenObjectAttribute4" text="{DataModel>ASNStatus}"/>
+							<ObjectAttribute id="_IDGenObjectAttribute3" text="{DataModel>ASNDate}"/>	
 						</attributes>
+						<secondStatus>
+						   <ObjectStatus id="_IDGenObjectStatus2" text="{DataModel>ASNStatus}" state="{path:'DataModel>ASNStatus',formatter:'sap.fiori.asncreationsa.controller.formatter.Status'}"/>
+						</secondStatus>
 					</ObjectListItem>
 				</items>
 			</List>
@@ -24,9 +22,9 @@
 		<footer>
 			<Bar id="_IDGenBar1">
 				<contentLeft>
-					<!-- <Button id="FilterId" visible="true" icon="sap-icon://filter" press="onPlantValueHelp" type="Emphasized"/>
+					<Button id="FilterId" visible="true" icon="sap-icon://filter" press="onFilter" type="Emphasized"/>
 					<Button id="clearFilterId" visible="false" icon="sap-icon://clear-filter" press="onFilterClear" type="Emphasized"/>
-					<Label id="plantFilterId" design="Bold"/> -->
+					<Label id="plantFilterId" design="Bold"/>
 				</contentLeft>
 			</Bar>
 		</footer>
