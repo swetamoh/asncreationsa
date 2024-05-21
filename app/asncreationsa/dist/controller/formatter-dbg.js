@@ -53,17 +53,24 @@ sap.fiori.asncreationsa.controller.formatter = {
 		}
 		return false;
 	},
-	statusCheckConf: function (oStatus) {
-		if (oStatus === "Confirmed") {
-			return "Success";
-		} else if (oStatus === "Partially Confirmed") {
-			return "Warning";
-		} else if (oStatus === "Confirmation Required") {
-			return "Error";
-		} else {
-			return "None";
-		}
-	},
+	Status: function (status) {
+        var state = "None";
+        if (status) {
+            switch (status) {
+                case "Pending":
+                case "PENDING":
+                    state = "Success";
+                    break;
+				case "Cancelled":
+                case "CANCELLED":
+                    state = "Error";
+                    break;
+                default: state = "Warning";
+                    break;
+            }
+        }
+        return state;
+    },
 	statusCheck: function (oStatus) {
 		if (oStatus === "Closed") {
 			return "Success";

@@ -183,7 +183,7 @@
                 	<upload:UploadSet
 					id="uploadSet"
 					instantUpload="false"
-					uploadEnabled="true"
+					uploadEnabled="false"
                     afterItemAdded="onAfterItemAdded"
 					uploadCompleted="onUploadCompleted"
 					>

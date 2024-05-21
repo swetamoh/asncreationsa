@@ -177,6 +177,7 @@
 					<IconTabFilter
                     id="_IDGenIconTabFilter2"
                     icon="sap-icon://attachment"
+					text="Attachment"
 					iconColor="Negative"
                 	>
                 	<upload:UploadSet
