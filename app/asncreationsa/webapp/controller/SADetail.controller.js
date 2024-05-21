@@ -83,7 +83,7 @@ sap.ui.define([
 			var that = this;
 			var oModel = this.getView().getModel("catalog");
 			var oUploadSet = this.byId("uploadSet");
-			oUploadSet.setUploadEnabled(true);
+			oUploadSet.setUploadEnabled(false);
 			oUploadSet.removeAllItems();
 			this.userType = this.getView().getModel().getHeaders().loginType;
 			oModel.read("/Files", {
@@ -100,10 +100,10 @@ sap.ui.define([
 								new sap.m.ObjectAttribute({ title: "File Size", text: fileData.size.toString() })
 							]
 						});
-						if(that.userType === "P" && that.ASNStatus !== "PENDING"){
+						//if(that.userType === "P" && that.ASNStatus !== "PENDING"){
 							that.byId("uploadSet").setUploadEnabled(false);
 							oItem.setVisibleEdit(false).setVisibleRemove(false);
-						}
+						//}
 						oUploadSet.addItem(oItem);
 					});
 				},
