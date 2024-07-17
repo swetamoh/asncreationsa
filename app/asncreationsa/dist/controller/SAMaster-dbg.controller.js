@@ -90,7 +90,7 @@ sap.ui.define([
 			this.ASNfromdate = this.ASNfromdate.substring(0, 2) + " " + this.ASNfromdate.substring(2, 5) + " " + this.ASNfromdate.substring(5, 9);
 
 			this.unitCode = sessionStorage.getItem("unitCode") || "P01";
-			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA") || "AKI-03-01";
+			this.AddressCodeASNSA = sessionStorage.getItem("AddressCodeASNSA") || "GPL-01-01";
 			this.LoggedUser = sessionStorage.getItem("LoggedUser") || "rajeshsehgal@impauto.com";
 			var oModel = this.getOwnerComponent().getModel();
 			oModel.read("/GetASNHeaderList", {

@@ -8,22 +8,22 @@ module.exports = (srv) => {
     srv.on('READ', GetASNHeaderList, async (req) => {
         const params = req._queryOptions;
         const loginid = req.headers.loginid;
-        let results = await getASNHeaderList(params,loginid);
+        let results = await getASNHeaderList(params, loginid);
         if (results.error) req.reject(500, results.error);
-         // Checking for search parameter
-         const searchVal = req._queryOptions && req._queryOptions.$search;
-         if (searchVal) {
-             let cleanedSearchVal = searchVal.trim().replace(/"/g, '');
+        // Checking for search parameter
+        const searchVal = req._queryOptions && req._queryOptions.$search;
+        if (searchVal) {
+            let cleanedSearchVal = searchVal.trim().replace(/"/g, '');
             //  if(cleanedSearchVal === 'Invoice Submitted' || cleanedSearchVal === 'Invoice Submission Pending'){
             //      results = results.filter(asn =>
             //          (asn.HasAttachments === cleanedSearchVal)
             //      );
             //  }else{
-             results = results.filter(asn =>
+            results = results.filter(asn =>
                 asn.ASNNumber.includes(cleanedSearchVal)
-             );
+            );
             //  }
-         }
+        }
         return results;
 
     });
@@ -31,7 +31,7 @@ module.exports = (srv) => {
     srv.on('READ', GetASNDetailList, async (req) => {
         const { AddressCode, ASNNumber, UnitCode } = req._queryOptions;
         const loginid = req.headers.loginid;
-        const results = await getASNDetailList(AddressCode, ASNNumber, UnitCode,loginid);
+        const results = await getASNDetailList(AddressCode, ASNNumber, UnitCode, loginid);
         if (results.error) req.reject(500, results.error);
         return results;
     });
@@ -46,7 +46,7 @@ module.exports = (srv) => {
             return response;
         } catch (error) {
             console.error('Error in PostASNCancellation API call:', error);
-            req.reject(400,`${error.message}`);
+            req.reject(400, `${error.message}`);
         }
     });
 
@@ -68,7 +68,7 @@ module.exports = (srv) => {
                 req.reject(500, `Error parsing response: ${response.data}`);
             }
         } catch (error) {
-            req.reject(500,error );
+            req.reject(500, error);
         }
     });
 };
@@ -84,16 +84,18 @@ async function getASNHeaderList(params, loginid) {
         const token = await generateToken(loginid),
             legApi = await cds.connect.to('Legacy'),
             response = await legApi.send({
-            query : `GET GetASNHeaderList?RequestBy='${loginid}'&AddressCode='${AddressCode}'&PoNumber='${PoNumber}'&ASNNumber='${ASNNumber}'&ASNFromdate='${ASNFromdate}'&ASNTodate='${ASNTodate}'&InvoiceStatus='${InvoiceStatus}'&MRNStatus='${MRNStatus}'&ApprovedBy='${ApprovedBy}'`,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            data: {}
-        });
+                query: `GET GetASNHeaderList?RequestBy='${loginid}'&AddressCode='${AddressCode}'&PoNumber='${PoNumber}'&ASNNumber='${ASNNumber}'&ASNFromdate='${ASNFromdate}'&ASNTodate='${ASNTodate}'&InvoiceStatus='${InvoiceStatus}'&MRNStatus='${MRNStatus}'&ApprovedBy='${ApprovedBy}'`,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                data: {}
+            });
 
         if (response.d) {
-            return JSON.parse(response.d);
+            return JSON.parse(response.d).sort((a, b) => {
+                return new Date(b.ASNDate.split(" ")[0]) - new Date(a.ASNDate.split(" ")[0])
+            });
         } else {
             return {
                 error: response.ErrorDescription
@@ -109,15 +111,15 @@ async function getASNDetailList(AddressCode, ASNNumber, UnitCode, loginid) {
     try {
 
         const token = await generateToken(loginid),
-        legApi = await cds.connect.to('Legacy'),
-        response = await legApi.send({
-            query: `GET GetASNDetailList?RequestBy='${loginid}'&AddressCode='${AddressCode}'&ASNNumber='${ASNNumber}'&UnitCode='${UnitCode}'`,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            data: {}
-        });
+            legApi = await cds.connect.to('Legacy'),
+            response = await legApi.send({
+                query: `GET GetASNDetailList?RequestBy='${loginid}'&AddressCode='${AddressCode}'&ASNNumber='${ASNNumber}'&UnitCode='${UnitCode}'`,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                data: {}
+            });
 
         if (response.d) {
             return JSON.parse(response.d);
@@ -132,18 +134,18 @@ async function getASNDetailList(AddressCode, ASNNumber, UnitCode, loginid) {
     }
 }
 
-async function PostASNCancellation(asnData,loginid) {
+async function PostASNCancellation(asnData, loginid) {
     try {
         const token = await generateToken(loginid),
-        legApi = await cds.connect.to('Legacy'),
-        response = await legApi.send({
-            query: `POST PostASNCancellation`,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            data: asnData
-        });
+            legApi = await cds.connect.to('Legacy'),
+            response = await legApi.send({
+                query: `POST PostASNCancellation`,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                data: asnData
+            });
 
         if (response.SuccessCode) {
             return response.SuccessCode;
@@ -160,14 +162,14 @@ async function generateToken(username) {
     try {
         const legApi = await cds.connect.to('Legacy'),
             response = await legApi.send({
-            query: `POST GenerateToken`,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: {
-                "InputKey": username
-            }
-        });
+                query: `POST GenerateToken`,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    "InputKey": username
+                }
+            });
 
         if (response.d) {
             return response.d;

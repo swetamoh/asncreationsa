@@ -38,7 +38,7 @@
       "Legacy": {
         "kind": "rest",
         "credentials": {
-          "url": "https://imperialauto.co:84/IAIAPI.asmx/"
+          "url": "https://iaierp.com:84/iaiapi.asmx/"
         }
       }
     },
